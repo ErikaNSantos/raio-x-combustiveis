@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raio-X dos Combustíveis</title>
+    <meta name="description" content="Preços de gasolina, etanol e diesel no Brasil, por estado, capital e município, com e sem inflação. Dados abertos da ANP, atualizados todo mês." />
+    <meta property="og:title" content="Raio-X dos Combustíveis" />
+    <meta property="og:description" content="Quanto custa abastecer em cada estado, quando o etanol compensa e quanto o preço muda dentro da mesma cidade. Dados da ANP." />
+    <meta property="og:type" content="website" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Tema antes do primeiro paint: escolha salva > preferência do sistema.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("tema"); } catch (e) {}
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <div class="wrap">
+        <a class="marca" href="./"><span>R</span>Raio-X dos Combustíveis</a>
+        <nav>
+          <a href="#metodo">Método</a>
+          <a href="https://github.com/ErikaNSantos/raio-x-combustiveis">Código</a>
+          <button class="btn-tema" id="btn-tema" type="button" aria-label="Alternar tema"></button>
+        </nav>
+      </div>
+    </header>
+
+    <div class="wrap abertura">
+      <span class="selo" id="selo">Carregando dados da ANP…</span>
+      <h1>Quanto custa abastecer no Brasil</h1>
+      <p>Gasolina, etanol e diesel em cada estado, capital e município pesquisado pela ANP, desde 2023, com os preços corrigidos pela inflação.</p>
+    </div>
+
+    <div class="filtros">
+      <div class="wrap">
+        <label class="campo">Combustível
+          <select id="f-produto"></select>
+        </label>
+        <div class="campo">Valores
+          <div class="alternar" role="group" aria-label="Valores">
+            <button type="button" id="f-real" aria-pressed="true">Corrigidos pela inflação</button>
+            <button type="button" id="f-nominal" aria-pressed="false">Do mês (nominais)</button>
+          </div>
+        </div>
+        <label class="campo">Estado em destaque
+          <select id="f-uf"></select>
+        </label>
+      </div>
+    </div>
+
+    <main class="wrap" id="conteudo">
+      <section class="bloco" aria-labelledby="h-agora">
+        <h2 id="h-agora">O mês mais recente</h2>
+        <p class="lead" id="lead-agora"></p>
+        <div class="tiles" id="tiles"></div>
+      </section>
+
+      <section class="bloco" aria-labelledby="h-mapa">
+        <h2 id="h-mapa">Preço por estado</h2>
+        <p class="lead">Preço mediano dos postos pesquisados no mês. Clique num estado para destacá-lo nos gráficos abaixo.</p>
+        <div class="grade-2">
+          <div class="cartao">
+            <div class="grafico" id="g-mapa"></div>
+            <div class="escala" id="escala-mapa"></div>
+          </div>
+          <div class="cartao">
+            <p class="titulo-grafico">Do mais caro ao mais barato</p>
+            <p class="sub-grafico" id="sub-ranking"></p>
+            <div class="grafico" id="g-ranking"></div>
+          </div>
+        </div>
+        <details class="tabela"><summary>Ver tabela</summary><div class="tabela-rolagem" id="t-mapa"></div></details>
+      </section>
+
+      <section class="bloco" aria-labelledby="h-etanol">
+        <h2 id="h-etanol">Etanol ou gasolina?</h2>
+        <p class="lead">O etanol rende cerca de 70% da gasolina por litro. Quando o preço dele fica abaixo de 70% do preço da gasolina, abastecer com etanol sai mais barato por quilômetro.</p>
+        <div class="cartao">
+          <div class="legenda" id="leg-etanol"></div>
+          <div class="grafico" id="g-etanol"></div>
+          <details class="tabela"><summary>Ver tabela</summary><div class="tabela-rolagem" id="t-etanol"></div></details>
+        </div>
+      </section>
+
+      <section class="bloco" aria-labelledby="h-evolucao">
+        <h2 id="h-evolucao">Como o preço mudou</h2>
+        <p class="lead" id="lead-evolucao"></p>
+        <div class="cartao">
+          <div class="legenda" id="leg-evolucao"></div>
+          <div class="grafico" id="g-evolucao"></div>
+          <p class="aviso" id="aviso-falta" hidden></p>
+          <details class="tabela"><summary>Ver tabela</summary><div class="tabela-rolagem" id="t-evolucao"></div></details>
+        </div>
+      </section>
+
+      <section class="bloco" aria-labelledby="h-capitais">
+        <h2 id="h-capitais">Mesma cidade, preços diferentes</h2>
+        <p class="lead">Em cada capital, a faixa onde ficam 80% dos postos no mês, sem os 10% mais baratos e os 10% mais caros, para um posto fora da curva não distorcer a comparação. Quanto maior a barra, mais vale a pena pesquisar antes de abastecer.</p>
+        <div class="cartao">
+          <div class="legenda" id="leg-capitais"></div>
+          <div class="grafico" id="g-capitais"></div>
+          <details class="tabela"><summary>Ver tabela</summary><div class="tabela-rolagem" id="t-capitais"></div></details>
+        </div>
+      </section>
+
+      <section class="bloco" aria-labelledby="h-municipio">
+        <h2 id="h-municipio">Seu município</h2>
+        <p class="lead">A ANP pesquisa uma amostra de cerca de 400 municípios por mês, não todos. Se o seu não aparece na lista, ele não está na amostra.</p>
+        <div class="cartao">
+          <div class="filtros-locais" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+            <label class="campo">Município
+              <select id="f-municipio"></select>
+            </label>
+          </div>
+          <div class="legenda" id="leg-municipio"></div>
+          <div class="grafico" id="g-municipio"></div>
+          <details class="tabela"><summary>Ver tabela</summary><div class="tabela-rolagem" id="t-municipio"></div></details>
+        </div>
+      </section>
+
+      <section class="bloco" id="metodo" aria-labelledby="h-metodo">
+        <h2 id="h-metodo">Método e limitações</h2>
+        <div class="cartao metodo" id="texto-metodo"></div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>Feito por <a href="https://erikansantos.github.io">Érika Nogueira Santos</a> · dados abertos da ANP e do IBGE</span>
+        <span id="rodape-atualizado"></span>
+      </div>
+    </footer>
+
+    <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+    <script src="vendor/d3.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

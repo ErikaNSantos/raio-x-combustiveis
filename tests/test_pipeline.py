@@ -1,0 +1,114 @@
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+from pipeline import fontes, ipca
+from pipeline.agregar import agregar_arquivo, precos_por_posto
+
+BASE = "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/arquivos/shpc/dsan"
+
+
+def _html(*caminhos: str) -> str:
+    return "".join(f'<a href="{BASE}/{c}">x</a>' for c in caminhos)
+
+
+def test_extrai_todos_os_padroes_de_nome_da_anp():
+    html = _html(
+        "2023/precos-gasolina-etanol-01.csv",  # mês no fim
+        "2026/01-dados-abertos-precos-diesel-gnv.csv",  # mês no começo
+        "2026/06-dados-abertos-precos-2026-06-gasolina-etanol.csv",  # ano repetido no meio
+        "2026/02-cados-abertos-preco-gasolina-etanol.csv",  # erro de digitação da ANP
+        "2026/01-dados-abertos-precos-glp.csv",  # GLP fica fora da v1
+    )
+    chaves = [a.chave for a in fontes.extrair(html)]
+    assert chaves == [
+        "2023-01_gasolina-etanol",
+        "2026-01_diesel-gnv",
+        "2026-02_gasolina-etanol",
+        "2026-06_gasolina-etanol",
+    ]
+
+
+def test_ignora_links_duplicados_e_meses_invalidos():
+    html = _html("2025/precos-gasolina-etanol-03.csv", "2025/precos-gasolina-etanol-03.csv", "2025/precos-gasolina-etanol-13.csv")
+    assert [a.chave for a in fontes.extrair(html)] == ["2025-03_gasolina-etanol"]
+
+
+def test_aponta_mes_sem_arquivo():
+    html = _html("2026/03-dados-abertos-precos-gasolina-etanol.csv", "2026/05-dados-abertos-precos-gasolina-etanol.csv")
+    assert fontes.meses_faltando(fontes.extrair(html)) == ["2026-04"]
+
+
+CSV = """Regiao - Sigla;Estado - Sigla;Municipio;Revenda;CNPJ da Revenda;Nome da Rua;Numero Rua;Complemento;Bairro;Cep;Produto;Data da Coleta;Valor de Venda;Valor de Compra;Unidade de Medida;Bandeira
+NE;BA;SALVADOR;POSTO A; 11.111.111/0001-11;RUA;1;;B;40000-000;GASOLINA;01/09/2026;6,00;;R$ / litro;X
+NE;BA;SALVADOR;POSTO A; 11.111.111/0001-11;RUA;1;;B;40000-000;GASOLINA;08/09/2026;6,20;;R$ / litro;X
+NE;BA;SALVADOR;POSTO A; 11.111.111/0001-11;RUA;1;;B;40000-000;GASOLINA;15/09/2026;6,40;;R$ / litro;X
+NE;BA;SALVADOR;POSTO B; 22.222.222/0001-22;RUA;2;;B;40000-000;GASOLINA;01/09/2026;7,00;;R$ / litro;X
+NE;BA;SALVADOR;POSTO B; 22.222.222/0001-22;RUA;2;;B;40000-000;GASOLINA;01/09/2026;59,90;;R$ / litro;X
+NE;BA;SALVADOR;POSTO B; 22.222.222/0001-22;RUA;2;;B;40000-000;ETANOL;01/09/2026;4,50;;R$ / litro;X
+SE;SP;SAO PAULO;POSTO C; 33.333.333/0001-33;RUA;3;;B;01000-000;GASOLINA;01/09/2026;5,80;;R$ / litro;X
+"""
+
+
+@pytest.fixture
+def csv_anp(tmp_path: Path) -> Path:
+    caminho = tmp_path / "anp.csv"
+    caminho.write_bytes(CSV.encode("utf-8-sig"))
+    return caminho
+
+
+def test_posto_visitado_varias_vezes_conta_uma_vez(csv_anp):
+    resumo, qualidade = agregar_arquivo(csv_anp, "2026-09")
+    ssa = resumo[(resumo.codigo == "BA|SALVADOR") & (resumo.produto == "gasolina")].iloc[0]
+    # Posto A: mediana de 6,00/6,20/6,40 = 6,20. Posto B: 7,00. Dois postos, não quatro coletas.
+    assert ssa.postos == 2
+    assert ssa.minimo == pytest.approx(6.20)
+    assert ssa.maximo == pytest.approx(7.00)
+    assert ssa.mediana == pytest.approx(6.60)
+
+
+def test_descarta_preco_fora_da_faixa_e_conta(csv_anp):
+    resumo, qualidade = agregar_arquivo(csv_anp, "2026-09")
+    assert qualidade["descartadas_faixa"] == 1  # o 59,90 digitado errado
+    assert resumo["maximo"].max() < 15
+
+
+def test_niveis_brasil_uf_municipio(csv_anp):
+    resumo, _ = agregar_arquivo(csv_anp, "2026-09")
+    gasolina = resumo[resumo.produto == "gasolina"].set_index("codigo")
+    assert gasolina.loc["BR", "postos"] == 3
+    assert gasolina.loc["BA", "postos"] == 2
+    assert gasolina.loc["SP|SAO PAULO", "mediana"] == pytest.approx(5.80)
+
+
+def test_produto_desconhecido_fica_fora():
+    df = pd.DataFrame({"uf": ["BA"], "municipio": ["X"], "cnpj": ["1"], "produto": ["QUEROSENE"], "preco": [5.0]})
+    postos, qualidade = precos_por_posto(df)
+    assert postos.empty and qualidade["fora_escopo"] == 1
+
+
+def test_ipca_converte_para_o_ultimo_indice_e_deixa_meses_sem_indice_nominais():
+    linhas = [{"D3C": "cabecalho"}, {"D3C": "202301", "V": "100"}, {"D3C": "202302", "V": "110"}, {"D3C": "202303", "V": "..."}]
+    indice = ipca.parse(linhas)
+    fatores, base = ipca.fatores(indice, ["2023-01", "2023-02", "2023-03"])
+    assert base == "2023-02"
+    assert fatores == {"2023-01": pytest.approx(1.1), "2023-02": 1.0, "2023-03": 1.0}
+
+
+def test_mapa_orienta_aneis_como_o_d3_espera():
+    from pipeline.malha import _area, _orientar
+
+    anti_horario = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]
+    externo, = _orientar([anti_horario])
+    assert _area(externo) < 0  # externo no sentido horário
+    externo, buraco = _orientar([anti_horario[::-1], anti_horario[::-1]])
+    assert _area(externo) < 0 and _area(buraco) > 0
+
+
+def test_nome_da_anp_casa_com_o_do_ibge():
+    from pipeline.malha import normalizar
+
+    assert normalizar("São Luís") == "SAO LUIS"
+    assert normalizar("Alta Floresta D'Oeste") == "ALTA FLORESTA D OESTE"
+    assert normalizar("Embu-Guaçu") == "EMBU GUACU"

@@ -1,0 +1,6 @@
+# CSVs brutos da ANP (centenas de MB): baixados sob demanda, nunca versionados
+data/brutos/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
