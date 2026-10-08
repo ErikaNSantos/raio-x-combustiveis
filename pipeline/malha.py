@@ -67,9 +67,17 @@ def normalizar(nome: str) -> str:
     return " ".join(sem_acento.upper().replace("'", " ").replace("-", " ").split())
 
 
+# Grafias da ANP que não batem com o IBGE nem depois de normalizar (conferido em out/2026: 1 de 462).
+GRAFIAS_ANP = {"RS|SANTANA DO LIVRAMENTO": "RS|SANT ANA DO LIVRAMENTO"}
+
+
 def nomes_municipios() -> dict[str, str]:
     """{'SP|SAO PAULO': 'São Paulo', ...} para mostrar o nome oficial do IBGE, com acento."""
-    return {
+    nomes = {
         f"{m['UF-sigla']}|{normalizar(m['municipio-nome'])}": m["municipio-nome"]
         for m in _get(MUNICIPIOS)
     }
+    for anp, ibge in GRAFIAS_ANP.items():
+        if ibge in nomes:
+            nomes[anp] = nomes[ibge]
+    return nomes
