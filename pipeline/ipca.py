@@ -8,8 +8,8 @@ import urllib.request
 URL = "https://apisidra.ibge.gov.br/values/t/1737/n1/all/v/2266/p/{inicio}-{fim}"
 
 
-def baixar(inicio: str = "202301", fim: str = "209912") -> dict[str, float]:
-    """{'2023-01': 6487.31, ...}. Os meses ainda não divulgados simplesmente não vêm."""
+def baixar(inicio: str = "200401", fim: str = "209912") -> dict[str, float]:
+    """{'AAAA-MM': número-índice, ...}. Os meses ainda não divulgados simplesmente não vêm."""
     req = urllib.request.Request(URL.format(inicio=inicio, fim=fim), headers={"User-Agent": "raio-x-combustiveis"})
     with urllib.request.urlopen(req, timeout=60) as resp:
         linhas = json.load(resp)

@@ -1,10 +1,13 @@
-"""Junta os agregados mensais e gera os JSONs que a página lê.
+"""Junta os agregados e gera os JSONs que a página lê.
 
-- site/data/resumo.json: Brasil e UFs, todos os meses (carregado sempre, pequeno).
-- site/data/municipios/<UF>.json: municípios de uma UF (carregado só quando a UF é escolhida).
+- site/data/resumo.json: Brasil e UFs desde 2004 com todas as estatísticas, capitais nos
+  últimos 13 meses (carregado sempre).
+- site/data/municipios/<UF>.json: mediana dos municípios de uma UF desde 2004 (carregado só
+  quando a UF é escolhida).
 
-As séries são listas de [periodo, mediana, p10, p90, minimo, maximo, postos], em valores
-nominais; o fator do IPCA de cada mês vai junto para a página converter em reais de hoje.
+Formato colunar para caber 20+ anos sem pesar: cada série é {"p": primeiro mês, campo: [valores]},
+um valor por mês corrido a partir de "p" (null quando não há dado). Valores nominais; o fator
+do IPCA de cada mês vai junto para a página converter em reais de hoje.
 """
 
 from __future__ import annotations
@@ -18,7 +21,8 @@ import pandas as pd
 from .agregar import CAPITAIS
 from .malha import normalizar
 
-CAMPOS = ["periodo", "mediana", "p10", "p90", "minimo", "maximo", "postos"]
+CAMPOS = ["mediana", "p10", "p90", "minimo", "maximo", "postos"]
+MESES_CAPITAIS = 13  # o gráfico de capitais usa o último mês; 13 dá a comparação com um ano antes
 
 
 def carregar(pasta: Path) -> pd.DataFrame:
@@ -28,12 +32,30 @@ def carregar(pasta: Path) -> pd.DataFrame:
     return pd.concat((pd.read_csv(a, dtype={"periodo": str}) for a in arquivos), ignore_index=True)
 
 
-def _series(df: pd.DataFrame) -> dict:
-    """{codigo: {produto: [[periodo, ...], ...]}} ordenado por período."""
+def _mes_seguinte(periodo: str) -> str:
+    ano, mes = int(periodo[:4]), int(periodo[5:])
+    return f"{ano + 1}-01" if mes == 12 else f"{ano}-{mes + 1:02d}"
+
+
+def _serie(g: pd.DataFrame, campos: list[str]) -> dict:
+    """{"p": primeiro mês, campo: [...]} com um valor por mês corrido (null nos buracos)."""
+    g = g.set_index("periodo").sort_index()
+    meses = [g.index[0]]
+    while meses[-1] < g.index[-1]:
+        meses.append(_mes_seguinte(meses[-1]))
+    g = g.reindex(meses)
+    saida: dict = {"p": meses[0]}
+    for c in campos:
+        col = g[c]
+        saida[c] = [None if pd.isna(v) else (int(v) if c == "postos" else float(v)) for v in col]
+    return saida
+
+
+def _series(df: pd.DataFrame, campos: list[str] = CAMPOS) -> dict:
+    """{codigo: {produto: série colunar}}."""
     saida: dict = {}
-    for (codigo, produto), g in df.sort_values("periodo").groupby(["codigo", "produto"]):
-        linhas = g[CAMPOS].astype(object).values.tolist()
-        saida.setdefault(codigo, {})[produto] = linhas
+    for (codigo, produto), g in df.groupby(["codigo", "produto"]):
+        saida.setdefault(codigo, {})[produto] = _serie(g, campos)
     return saida
 
 
@@ -57,6 +79,7 @@ def publicar(
     capitais = agregados[
         (agregados["nivel"] == "MUN")
         & agregados["codigo"].isin([f"{uf}|{nome}" for uf, nome in CAPITAIS.items()])
+        & (agregados["periodo"] >= periodos[-MESES_CAPITAIS])
     ]
     nomes_ibge = nomes_ibge or {}
 
@@ -73,7 +96,6 @@ def publicar(
         "ufs": dict(sorted(ufs.items())),
         "capitais": CAPITAIS,
         "nomes_capitais": {f"{uf}|{n}": nome_bonito(f"{uf}|{n}") for uf, n in CAPITAIS.items()},
-        "campos": CAMPOS,
         "series": _series(pd.concat([topo, capitais])),
         "qualidade": qualidade,
     }
@@ -83,7 +105,7 @@ def publicar(
     municipios["uf"] = municipios["codigo"].str.split("|").str[0]
     contagem = {}
     for uf, g in municipios.groupby("uf"):
-        series = _series(g.assign(codigo=g["codigo"].str.split("|").str[1]))
+        series = _series(g.assign(codigo=g["codigo"].str.split("|").str[1]), ["mediana"])
         nomes = {anp: nome_bonito(f"{uf}|{anp}") for anp in series}
         _gravar(destino / "municipios" / f"{uf}.json", {"nomes": nomes, "series": series})
         contagem[uf] = len(series)
