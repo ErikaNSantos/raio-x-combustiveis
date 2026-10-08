@@ -24,9 +24,9 @@ PRODUTOS = {
     "GNV": "gnv",
 }
 
-# Faixa plausível de preço (R$/litro ou R$/m³). Fora dela é erro de digitação na coleta,
+# Faixa plausível de preço (R$/litro ou R$/m³), de 2004 (etanol a R$ 0,90) até hoje. Fora dela é erro de digitação,
 # como 0,00 ou 59,90 no lugar de 5,99. Linhas descartadas são contadas, não escondidas.
-FAIXA_VALIDA = (1.0, 15.0)
+FAIXA_VALIDA = (0.3, 15.0)
 
 CAPITAIS = {
     "AC": "RIO BRANCO", "AL": "MACEIO", "AP": "MACAPA", "AM": "MANAUS", "BA": "SALVADOR",

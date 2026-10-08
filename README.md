@@ -30,7 +30,7 @@ GitHub Actions ─► toda segunda: roda o pipeline, versiona os dados novos e p
 
 - A ANP pesquisa uma amostra (cerca de 400 municípios e 6 mil postos por mês), não todos.
 - O arquivo não traz o preço de compra pelo posto, então não dá para calcular margem.
-- Preços fora de R$ 1 a R$ 15 são descartados como erro de digitação; a contagem fica em `data/qualidade.json`.
+- Preços fora de R$ 0,30 a R$ 15 são descartados como erro de digitação; a contagem fica em `data/qualidade.json`.
 - A regra dos 70% para o etanol é uma aproximação; o rendimento real varia com o carro.
 
 ## Rodar localmente

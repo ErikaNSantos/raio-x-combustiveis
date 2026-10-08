@@ -630,7 +630,7 @@
       `Fonte: Série Histórica de Preços de Combustíveis da ANP (levantamento semanal nos postos), arquivos mensais de ${mesLongo(R.periodos[0])} a ${mesLongo(ultimo())}. São ${linhasTotal.toLocaleString("pt-BR")} coletas no total.`,
       "Preço de cada posto no mês = mediana das coletas daquele posto. Assim um posto visitado várias vezes não pesa mais que um visitado uma vez. Os números de estado, capital e Brasil são a mediana desses preços por posto.",
       `Correção pela inflação: IPCA do IBGE (tabela 1737), levando todos os meses a reais de ${mesLongo(R.ipca.base)}. Meses mais recentes que o último IPCA divulgado ficam no valor nominal até o índice sair.`,
-      `Preços fora da faixa de R$ 1 a R$ 15 são tratados como erro de digitação e descartados: ${descartadas.toLocaleString("pt-BR")} coletas até agora.`,
+      `Preços fora da faixa de R$ 0,30 a R$ 15 são tratados como erro de digitação e descartados: ${descartadas.toLocaleString("pt-BR")} coletas até agora.`,
       R.meses_faltando.length ? `A ANP não publicou os arquivos de ${R.meses_faltando.map(mesLongo).join(", ")}.` : "Nenhum mês faltando no período.",
       "A pesquisa da ANP é uma amostra (cerca de 400 municípios e 6 mil postos por mês), não um censo. Ela não traz o preço de compra pelo posto, então não dá para calcular margem.",
       "Regra dos 70%: é uma aproximação. O rendimento real do etanol em relação à gasolina varia com o carro e o jeito de dirigir.",

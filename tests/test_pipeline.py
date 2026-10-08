@@ -112,3 +112,29 @@ def test_nome_da_anp_casa_com_o_do_ibge():
     assert normalizar("São Luís") == "SAO LUIS"
     assert normalizar("Alta Floresta D'Oeste") == "ALTA FLORESTA D OESTE"
     assert normalizar("Embu-Guaçu") == "EMBU GUACU"
+
+
+def _ancora(caminho: str, texto: str) -> str:
+    return f'<a href="https://www.gov.br/anp/x/shpc/dsas/ca/{caminho}">{texto}</a>'
+
+
+def test_semestral_le_ano_do_texto_quando_o_nome_nao_diz():
+    html = (
+        _ancora("ca-2021-02.csv", "2º semestre de 2021")
+        + _ancora("precos-semestrais-ca.zip", "1º semestre de 2022")  # nome sem ano: caso real da ANP
+        + _ancora("ca-2022-02.zip", "<span>2º semestre de 2022</span>")
+    )
+    arquivos = fontes.extrair_semestrais(html)
+    assert [a.chave for a in arquivos] == ["2021-07_semestral", "2022-01_semestral", "2022-07_semestral"]
+    assert fontes.meses_faltando([fontes.Arquivo(a.ano, m, "x", "") for a in arquivos for m in range(a.mes, a.mes + 6)]) == []
+
+
+def test_plano_prefere_semestral_e_usa_mensal_so_no_que_falta():
+    from base.construir import plano
+
+    semestral = fontes.Arquivo(2026, 1, "semestral", "s")
+    mensais = [fontes.Arquivo(2026, m, "gasolina-etanol", f"m{m}") for m in (3, 5, 7)]
+    por_mes = plano([semestral], mensais)
+    assert [a.url for a in por_mes["2026-03"]] == ["s"]  # coberto pelo semestral: mensal ignorado
+    assert [a.url for a in por_mes["2026-04"]] == ["s"]  # mês que falta nos mensais vem do semestral
+    assert [a.url for a in por_mes["2026-07"]] == ["m7"]  # depois do último semestral: mensal
