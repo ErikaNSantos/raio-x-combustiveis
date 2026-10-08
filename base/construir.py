@@ -138,8 +138,6 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
                 csv = csv_de(bruto, bruto.parent)
                 # Só os meses deste ano que o plano atribuiu a este arquivo (semestral cruza o ano? não; mensal é 1 mês)
                 meses = [m for m in meses_do_ano if arq in por_mes[m]]
-                for m in meses:
-                    origem_por_mes[m] = nome
                 parte = tmp / f"parte_{i}.parquet"
                 lista_meses = ", ".join(_lit(m) for m in meses)
                 con.execute(
@@ -149,6 +147,11 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
                     ) TO {_lit(str(parte))} (FORMAT parquet, COMPRESSION zstd)"""
                 )
                 partes.append(str(parte))
+                # Origem só dos meses que de fato vieram no arquivo (a série começa em maio/2004).
+                for (m,) in con.execute(
+                    f"SELECT DISTINCT strftime(data, '%Y-%m') FROM read_parquet({_lit(str(parte))})"
+                ).fetchall():
+                    origem_por_mes[m] = nome
                 if not manter:
                     csv.unlink(missing_ok=True)
             destino = saida / f"combustiveis_{ano}.parquet"
@@ -170,17 +173,19 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
             "produtos": produtos,
             "meses": n_meses,
             "sem_preco_venda": sem_preco,
-            "origem_por_mes": origem_por_mes,
+            "origem_por_mes": dict(sorted(origem_por_mes.items())),
             "mb": round(destino.stat().st_size / 1e6, 1),
         }
         print(f"  {linhas:,} linhas, {n_meses} meses, {destino.stat().st_size / 1e6:.1f} MB", flush=True)
         manifesto_path.write_text(json.dumps(manifesto, indent=1, ensure_ascii=False))
 
-    todos = sorted(por_mes)
+    # Período e buracos pelos meses que têm dados, não pelos que os arquivos prometem.
+    todos = sorted(m for info in manifesto["anos"].values() for m in info["origem_por_mes"])
     manifesto["periodo"] = [todos[0], todos[-1]]
-    manifesto["meses_sem_arquivo"] = fontes.meses_faltando(
+    manifesto["meses_sem_dados"] = fontes.meses_faltando(
         [fontes.Arquivo(int(m[:4]), int(m[5:]), "x", "") for m in todos]
     )
+    manifesto.pop("meses_sem_arquivo", None)
     manifesto_path.write_text(json.dumps(manifesto, indent=1, ensure_ascii=False))
     return manifesto
 
