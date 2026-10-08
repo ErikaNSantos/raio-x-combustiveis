@@ -1,7 +1,12 @@
 """Monta a base histórica de preços de combustíveis da ANP (2004 em diante) com DuckDB.
 
-    python -m base.construir --saida base/parquet            # todos os anos
+    python -m base.construir --saida base/parquet            # anos novos ou cujos arquivos mudaram
+    python -m base.construir --saida base/parquet --refazer  # todos os anos, do zero
     python -m base.construir --saida base/parquet --anos 2026  # só os anos pedidos
+
+Um ano já presente em `manifesto.json` e montado a partir dos mesmos arquivos é pulado,
+então uma execução interrompida continua de onde parou. Se um ano falha (o gov.br corta
+conexões), os outros seguem e o comando sai com erro no fim.
 
 Fontes, escolhidas mês a mês:
 - arquivos semestrais (`dsas/ca`), o consolidado oficial, sempre que cobrem o mês;
@@ -20,6 +25,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 from collections import defaultdict
 from pathlib import Path
@@ -53,10 +59,12 @@ def _lit(texto: str) -> str:
     return "'" + texto.replace("'", "''") + "'"
 
 
-def baixar(url: str, destino: Path, tentativas: int = 8) -> None:
-    """curl com retomada (-C -): o gov.br costuma cortar downloads grandes no meio."""
+def baixar(url: str, destino: Path, tentativas: int = 12) -> None:
+    """curl com retomada (-C -) e espera crescente: o gov.br corta downloads grandes no meio."""
     destino.parent.mkdir(parents=True, exist_ok=True)
     for i in range(tentativas):
+        if i:
+            time.sleep(min(5 * 2 ** (i - 1), 120))
         r = subprocess.run(
             ["curl", "-sS", "-L", "-C", "-", "--retry", "3", "--max-time", "900", "-o", str(destino), url],
             capture_output=True,
@@ -103,7 +111,7 @@ def plano(semestrais: list[fontes.Arquivo], mensais: list[fontes.Arquivo]) -> di
     return dict(sorted(por_mes.items()))
 
 
-def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = None) -> dict:
+def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = None, refazer: bool = False) -> tuple[dict, list[int]]:
     html = fontes.baixar_pagina()
     semestrais = fontes.extrair_semestrais(html)
     mensais = fontes.extrair(html)
@@ -120,74 +128,91 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
     con = duckdb.connect()
     con.execute("SET preserve_insertion_order = false")
 
+    falhas: list[int] = []
     for ano in sorted(arquivos_por_ano):
         if anos and ano not in anos:
             continue
-        meses_do_ano = sorted(m for m in por_mes if m.startswith(f"{ano}-"))
-        print(f"{ano}: {len(arquivos_por_ano[ano])} arquivo(s)", flush=True)
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp = Path(tmp)
-            partes = []
-            origem_por_mes = {}
-            for i, arq in enumerate(arquivos_por_ano[ano]):
-                nome = arq.url.rsplit("/", 1)[1]
-                bruto = (manter / nome) if manter else tmp / nome
-                if not bruto.exists():
-                    print(f"  baixando {nome}", flush=True)
-                    baixar(arq.url, bruto)
-                csv = csv_de(bruto, bruto.parent)
-                # Só os meses deste ano que o plano atribuiu a este arquivo (semestral cruza o ano? não; mensal é 1 mês)
-                meses = [m for m in meses_do_ano if arq in por_mes[m]]
-                parte = tmp / f"parte_{i}.parquet"
-                lista_meses = ", ".join(_lit(m) for m in meses)
-                con.execute(
-                    f"""COPY (
-                        SELECT * FROM ({SELECT_PADRAO.format(arquivo=_lit(str(csv)))})
-                        WHERE strftime(data, '%Y-%m') IN ({lista_meses})
-                    ) TO {_lit(str(parte))} (FORMAT parquet, COMPRESSION zstd)"""
-                )
-                partes.append(str(parte))
-                # Origem só dos meses que de fato vieram no arquivo (a série começa em maio/2004).
-                for (m,) in con.execute(
-                    f"SELECT DISTINCT strftime(data, '%Y-%m') FROM read_parquet({_lit(str(parte))})"
-                ).fetchall():
-                    origem_por_mes[m] = nome
-                if not manter:
-                    csv.unlink(missing_ok=True)
-            destino = saida / f"combustiveis_{ano}.parquet"
-            lista_partes = "[" + ", ".join(_lit(x) for x in partes) + "]"
-            con.execute(
-                f"""COPY (SELECT * FROM read_parquet({lista_partes}) ORDER BY data, uf, municipio, cnpj, produto)
-                    TO {_lit(str(destino))} (FORMAT parquet, COMPRESSION zstd, ROW_GROUP_SIZE 250000)"""
-            )
-        linhas, n_meses, sem_preco = con.execute(
-            f"SELECT count(*), count(DISTINCT strftime(data, '%Y-%m')), count(*) FILTER (preco_venda IS NULL) FROM read_parquet({_lit(str(destino))})"
-        ).fetchone()
-        produtos = dict(
-            con.execute(
-                f"SELECT produto, count(*) FROM read_parquet({_lit(str(destino))}) GROUP BY 1 ORDER BY 2 DESC"
-            ).fetchall()
-        )
-        manifesto["anos"][str(ano)] = {
-            "linhas": linhas,
-            "produtos": produtos,
-            "meses": n_meses,
-            "sem_preco_venda": sem_preco,
-            "origem_por_mes": dict(sorted(origem_por_mes.items())),
-            "mb": round(destino.stat().st_size / 1e6, 1),
-        }
-        print(f"  {linhas:,} linhas, {n_meses} meses, {destino.stat().st_size / 1e6:.1f} MB", flush=True)
+        nomes = sorted(a.url.rsplit("/", 1)[1] for a in arquivos_por_ano[ano])
+        anterior = manifesto["anos"].get(str(ano))
+        if not refazer and not anos and anterior and anterior.get("arquivos", sorted(set(anterior["origem_por_mes"].values()))) == nomes:
+            continue
+        try:
+            _construir_ano(con, ano, arquivos_por_ano[ano], por_mes, saida, manifesto, manter, nomes)
+        except Exception as erro:  # um ano ruim não derruba os outros
+            print(f"  {ano} falhou: {erro}", flush=True)
+            falhas.append(ano)
+            continue
         manifesto_path.write_text(json.dumps(manifesto, indent=1, ensure_ascii=False))
 
     # Período e buracos pelos meses que têm dados, não pelos que os arquivos prometem.
     todos = sorted(m for info in manifesto["anos"].values() for m in info["origem_por_mes"])
-    manifesto["periodo"] = [todos[0], todos[-1]]
+    manifesto["periodo"] = [todos[0], todos[-1]] if todos else []
     manifesto["meses_sem_dados"] = fontes.meses_faltando(
         [fontes.Arquivo(int(m[:4]), int(m[5:]), "x", "") for m in todos]
     )
     manifesto.pop("meses_sem_arquivo", None)
+    manifesto["anos"] = dict(sorted(manifesto["anos"].items()))
     manifesto_path.write_text(json.dumps(manifesto, indent=1, ensure_ascii=False))
-    return manifesto
+    return manifesto, falhas
+
+
+def _construir_ano(con, ano, arquivos, por_mes, saida, manifesto, manter, nomes) -> None:
+    """Baixa os arquivos de um ano, grava combustiveis_AAAA.parquet e a entrada do ano no manifesto."""
+    meses_do_ano = sorted(m for m in por_mes if m.startswith(f"{ano}-"))
+    print(f"{ano}: {len(arquivos)} arquivo(s)", flush=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        partes = []
+        origem_por_mes = {}
+        for i, arq in enumerate(arquivos):
+            nome = arq.url.rsplit("/", 1)[1]
+            bruto = (manter / nome) if manter else tmp / nome
+            if not bruto.exists():
+                print(f"  baixando {nome}", flush=True)
+                baixar(arq.url, bruto)
+            csv = csv_de(bruto, bruto.parent)
+            # Só os meses deste ano que o plano atribuiu a este arquivo
+            meses = [m for m in meses_do_ano if arq in por_mes[m]]
+            parte = tmp / f"parte_{i}.parquet"
+            lista_meses = ", ".join(_lit(m) for m in meses)
+            con.execute(
+                f"""COPY (
+                    SELECT * FROM ({SELECT_PADRAO.format(arquivo=_lit(str(csv)))})
+                    WHERE strftime(data, '%Y-%m') IN ({lista_meses})
+                ) TO {_lit(str(parte))} (FORMAT parquet, COMPRESSION zstd)"""
+            )
+            partes.append(str(parte))
+            # Origem só dos meses que de fato vieram no arquivo (a série começa em maio/2004).
+            for (m,) in con.execute(
+                f"SELECT DISTINCT strftime(data, '%Y-%m') FROM read_parquet({_lit(str(parte))})"
+            ).fetchall():
+                origem_por_mes[m] = nome
+            if not manter:
+                csv.unlink(missing_ok=True)
+        destino = saida / f"combustiveis_{ano}.parquet"
+        lista_partes = "[" + ", ".join(_lit(x) for x in partes) + "]"
+        con.execute(
+            f"""COPY (SELECT * FROM read_parquet({lista_partes}) ORDER BY data, uf, municipio, cnpj, produto)
+                TO {_lit(str(destino))} (FORMAT parquet, COMPRESSION zstd, ROW_GROUP_SIZE 250000)"""
+        )
+    linhas, n_meses, sem_preco = con.execute(
+        f"SELECT count(*), count(DISTINCT strftime(data, '%Y-%m')), count(*) FILTER (preco_venda IS NULL) FROM read_parquet({_lit(str(destino))})"
+    ).fetchone()
+    produtos = dict(
+        con.execute(
+            f"SELECT produto, count(*) FROM read_parquet({_lit(str(destino))}) GROUP BY 1 ORDER BY 2 DESC"
+        ).fetchall()
+    )
+    manifesto["anos"][str(ano)] = {
+        "linhas": linhas,
+        "arquivos": nomes,
+        "produtos": produtos,
+        "meses": n_meses,
+        "sem_preco_venda": sem_preco,
+        "origem_por_mes": dict(sorted(origem_por_mes.items())),
+        "mb": round(destino.stat().st_size / 1e6, 1),
+    }
+    print(f"  {linhas:,} linhas, {n_meses} meses, {destino.stat().st_size / 1e6:.1f} MB", flush=True)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -195,8 +220,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--saida", type=Path, default=Path("base/parquet"))
     p.add_argument("--anos", type=int, nargs="*", help="só estes anos (padrão: todos)")
     p.add_argument("--manter-brutos", type=Path, help="pasta para guardar os CSVs baixados e reaproveitar")
+    p.add_argument("--refazer", action="store_true", help="refaz também os anos que já estão no manifesto")
     a = p.parse_args(argv)
-    construir(a.saida, set(a.anos) if a.anos else None, a.manter_brutos)
+    _, falhas = construir(a.saida, set(a.anos) if a.anos else None, a.manter_brutos, a.refazer)
+    if falhas:
+        print(f"Anos que falharam (rode de novo para continuar): {falhas}")
+        return 1
     return 0
 
 
