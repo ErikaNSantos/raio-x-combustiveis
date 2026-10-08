@@ -1,0 +1,1364 @@
+{
+ "anos": {
+  "2004": "1d4a84e656d1",
+  "2005": "91cba94b134a",
+  "2006": "71798de64b49",
+  "2007": "fe0796b46ac2",
+  "2008": "48f3831854a6",
+  "2009": "2652ce1549aa",
+  "2010": "87fdc6db56fa",
+  "2011": "5eb18620a90d",
+  "2012": "b061ed5735b6",
+  "2013": "7bec32358508",
+  "2014": "0916d3f58599",
+  "2015": "f7d59c504e01",
+  "2016": "2e3912d5377f",
+  "2017": "f731c193c0da",
+  "2018": "319343a2362b",
+  "2019": "6d8eed9cb4e2",
+  "2020": "317c82708e29",
+  "2021": "51c65b14ecbb",
+  "2022": "2e25b32cf459",
+  "2023": "6d4dd2dae1b8",
+  "2024": "ac9f2f081a75",
+  "2025": "8523bf46cd42",
+  "2026": "77d8cc1dd8a3"
+ },
+ "qualidade": {
+  "2004-05": {
+   "linhas": 121896,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-06": {
+   "linhas": 159635,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-07": {
+   "linhas": 141393,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-08": {
+   "linhas": 170726,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-09": {
+   "linhas": 146687,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-10": {
+   "linhas": 140867,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-11": {
+   "linhas": 167731,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2004-12": {
+   "linhas": 147913,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-01": {
+   "linhas": 164619,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-02": {
+   "linhas": 131616,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-03": {
+   "linhas": 160304,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-04": {
+   "linhas": 140350,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-05": {
+   "linhas": 167150,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-06": {
+   "linhas": 148690,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-07": {
+   "linhas": 140249,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-08": {
+   "linhas": 90324,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-09": {
+   "linhas": 89426,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-10": {
+   "linhas": 122997,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-11": {
+   "linhas": 159158,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2005-12": {
+   "linhas": 139659,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-01": {
+   "linhas": 161524,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-02": {
+   "linhas": 119549,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-03": {
+   "linhas": 158709,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-04": {
+   "linhas": 132072,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-05": {
+   "linhas": 158332,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-06": {
+   "linhas": 138694,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-07": {
+   "linhas": 140703,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-08": {
+   "linhas": 160160,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-09": {
+   "linhas": 130592,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-10": {
+   "linhas": 128643,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-11": {
+   "linhas": 127118,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2006-12": {
+   "linhas": 115118,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-01": {
+   "linhas": 153153,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-02": {
+   "linhas": 132490,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-03": {
+   "linhas": 132530,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-04": {
+   "linhas": 132988,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-05": {
+   "linhas": 163428,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-06": {
+   "linhas": 129090,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-07": {
+   "linhas": 150890,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-08": {
+   "linhas": 111650,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-09": {
+   "linhas": 90386,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-10": {
+   "linhas": 114755,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-11": {
+   "linhas": 91398,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2007-12": {
+   "linhas": 100553,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-01": {
+   "linhas": 113277,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-02": {
+   "linhas": 99327,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-03": {
+   "linhas": 99502,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-04": {
+   "linhas": 124579,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-05": {
+   "linhas": 99812,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-06": {
+   "linhas": 100365,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-07": {
+   "linhas": 125399,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-08": {
+   "linhas": 100063,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-09": {
+   "linhas": 100581,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-10": {
+   "linhas": 125878,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-11": {
+   "linhas": 100673,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2008-12": {
+   "linhas": 125963,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-01": {
+   "linhas": 100416,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-02": {
+   "linhas": 100436,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-03": {
+   "linhas": 118009,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-04": {
+   "linhas": 108643,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-05": {
+   "linhas": 101014,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-06": {
+   "linhas": 116355,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-07": {
+   "linhas": 111206,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-08": {
+   "linhas": 52697,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-09": {
+   "linhas": 53142,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-10": {
+   "linhas": 75909,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-11": {
+   "linhas": 90727,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2009-12": {
+   "linhas": 102210,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-01": {
+   "linhas": 89561,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-02": {
+   "linhas": 94008,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-03": {
+   "linhas": 122461,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-04": {
+   "linhas": 99325,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-05": {
+   "linhas": 103658,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-06": {
+   "linhas": 119503,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-07": {
+   "linhas": 99718,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-08": {
+   "linhas": 117712,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-09": {
+   "linhas": 103337,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-10": {
+   "linhas": 99921,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-11": {
+   "linhas": 122486,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2010-12": {
+   "linhas": 102165,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-01": {
+   "linhas": 111268,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-02": {
+   "linhas": 87947,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-03": {
+   "linhas": 125246,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-04": {
+   "linhas": 100020,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-05": {
+   "linhas": 117799,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-06": {
+   "linhas": 107413,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-07": {
+   "linhas": 100205,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-08": {
+   "linhas": 123441,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-09": {
+   "linhas": 101754,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-10": {
+   "linhas": 111877,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-11": {
+   "linhas": 112551,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2011-12": {
+   "linhas": 100180,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2012-01": {
+   "linhas": 120938,
+   "fora_escopo": 2002,
+   "descartadas_faixa": 0
+  },
+  "2012-02": {
+   "linhas": 105756,
+   "fora_escopo": 2211,
+   "descartadas_faixa": 0
+  },
+  "2012-03": {
+   "linhas": 103701,
+   "fora_escopo": 2455,
+   "descartadas_faixa": 0
+  },
+  "2012-04": {
+   "linhas": 103961,
+   "fora_escopo": 2644,
+   "descartadas_faixa": 0
+  },
+  "2012-05": {
+   "linhas": 125615,
+   "fora_escopo": 3245,
+   "descartadas_faixa": 0
+  },
+  "2012-06": {
+   "linhas": 102275,
+   "fora_escopo": 2932,
+   "descartadas_faixa": 0
+  },
+  "2012-07": {
+   "linhas": 117059,
+   "fora_escopo": 3826,
+   "descartadas_faixa": 0
+  },
+  "2012-08": {
+   "linhas": 113418,
+   "fora_escopo": 4095,
+   "descartadas_faixa": 0
+  },
+  "2012-09": {
+   "linhas": 102704,
+   "fora_escopo": 4220,
+   "descartadas_faixa": 0
+  },
+  "2012-10": {
+   "linhas": 126274,
+   "fora_escopo": 5891,
+   "descartadas_faixa": 0
+  },
+  "2012-11": {
+   "linhas": 105685,
+   "fora_escopo": 5365,
+   "descartadas_faixa": 0
+  },
+  "2012-12": {
+   "linhas": 107117,
+   "fora_escopo": 5609,
+   "descartadas_faixa": 0
+  },
+  "2013-01": {
+   "linhas": 121465,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-02": {
+   "linhas": 102554,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-03": {
+   "linhas": 103109,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-04": {
+   "linhas": 117668,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-05": {
+   "linhas": 115748,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-06": {
+   "linhas": 103986,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-07": {
+   "linhas": 127426,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-08": {
+   "linhas": 107761,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-09": {
+   "linhas": 113580,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-10": {
+   "linhas": 123393,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-11": {
+   "linhas": 105469,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2013-12": {
+   "linhas": 121743,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-01": {
+   "linhas": 116803,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-02": {
+   "linhas": 106506,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-03": {
+   "linhas": 113475,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-04": {
+   "linhas": 127163,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-05": {
+   "linhas": 9688,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-07": {
+   "linhas": 128212,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-08": {
+   "linhas": 107902,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-09": {
+   "linhas": 124112,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-10": {
+   "linhas": 119233,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-11": {
+   "linhas": 108381,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2014-12": {
+   "linhas": 135248,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-01": {
+   "linhas": 108961,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-02": {
+   "linhas": 108384,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-03": {
+   "linhas": 125073,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-04": {
+   "linhas": 118853,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-05": {
+   "linhas": 108540,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-06": {
+   "linhas": 126963,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-07": {
+   "linhas": 117162,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-08": {
+   "linhas": 66711,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-09": {
+   "linhas": 43121,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-10": {
+   "linhas": 45951,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-11": {
+   "linhas": 58025,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2015-12": {
+   "linhas": 80004,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-01": {
+   "linhas": 74688,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-02": {
+   "linhas": 81518,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-03": {
+   "linhas": 86705,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-04": {
+   "linhas": 74952,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-05": {
+   "linhas": 87288,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-06": {
+   "linhas": 81746,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-07": {
+   "linhas": 75097,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-08": {
+   "linhas": 92309,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-09": {
+   "linhas": 76975,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-10": {
+   "linhas": 81326,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-11": {
+   "linhas": 86547,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2016-12": {
+   "linhas": 76706,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-01": {
+   "linhas": 87323,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-02": {
+   "linhas": 67234,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-03": {
+   "linhas": 89472,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-04": {
+   "linhas": 74988,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-05": {
+   "linhas": 91327,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-06": {
+   "linhas": 77315,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-07": {
+   "linhas": 77501,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-08": {
+   "linhas": 48788,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-09": {
+   "linhas": 41105,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-10": {
+   "linhas": 50458,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-11": {
+   "linhas": 42065,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2017-12": {
+   "linhas": 41030,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-01": {
+   "linhas": 90442,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-02": {
+   "linhas": 75687,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-03": {
+   "linhas": 78678,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-04": {
+   "linhas": 83141,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-05": {
+   "linhas": 69314,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-06": {
+   "linhas": 72571,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-07": {
+   "linhas": 83517,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-08": {
+   "linhas": 86886,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-09": {
+   "linhas": 76002,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-10": {
+   "linhas": 90805,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-11": {
+   "linhas": 79977,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2018-12": {
+   "linhas": 75982,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-01": {
+   "linhas": 95346,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-02": {
+   "linhas": 76540,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-03": {
+   "linhas": 76304,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-04": {
+   "linhas": 90231,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-05": {
+   "linhas": 81770,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-06": {
+   "linhas": 76539,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-07": {
+   "linhas": 92202,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-08": {
+   "linhas": 79527,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-09": {
+   "linhas": 82545,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-10": {
+   "linhas": 89666,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-11": {
+   "linhas": 76667,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2019-12": {
+   "linhas": 86692,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-01": {
+   "linhas": 85816,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-02": {
+   "linhas": 76693,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-03": {
+   "linhas": 85852,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-04": {
+   "linhas": 85564,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-05": {
+   "linhas": 76188,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-06": {
+   "linhas": 86550,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-07": {
+   "linhas": 84935,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-08": {
+   "linhas": 56525,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-10": {
+   "linhas": 8869,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-11": {
+   "linhas": 30069,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2020-12": {
+   "linhas": 42239,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-01": {
+   "linhas": 42121,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-02": {
+   "linhas": 44505,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-03": {
+   "linhas": 60455,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-04": {
+   "linhas": 52938,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-05": {
+   "linhas": 60462,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-06": {
+   "linhas": 74200,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-07": {
+   "linhas": 71899,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-08": {
+   "linhas": 80887,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-09": {
+   "linhas": 77417,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-10": {
+   "linhas": 74244,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-11": {
+   "linhas": 85609,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2021-12": {
+   "linhas": 82800,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-01": {
+   "linhas": 79711,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-02": {
+   "linhas": 79903,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-03": {
+   "linhas": 91935,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-04": {
+   "linhas": 83471,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-05": {
+   "linhas": 97082,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-06": {
+   "linhas": 97322,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-07": {
+   "linhas": 87362,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-08": {
+   "linhas": 105488,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-09": {
+   "linhas": 48228,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-10": {
+   "linhas": 33489,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-11": {
+   "linhas": 51423,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2022-12": {
+   "linhas": 52088,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-01": {
+   "linhas": 69027,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-02": {
+   "linhas": 62389,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-03": {
+   "linhas": 72164,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-04": {
+   "linhas": 68616,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-05": {
+   "linhas": 86577,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-06": {
+   "linhas": 72803,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-07": {
+   "linhas": 80860,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-08": {
+   "linhas": 82925,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-09": {
+   "linhas": 72251,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-10": {
+   "linhas": 85300,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-11": {
+   "linhas": 77901,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2023-12": {
+   "linhas": 73187,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-01": {
+   "linhas": 88652,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-02": {
+   "linhas": 75735,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-03": {
+   "linhas": 74121,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-04": {
+   "linhas": 87622,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-05": {
+   "linhas": 77235,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-06": {
+   "linhas": 73789,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-07": {
+   "linhas": 78578,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-08": {
+   "linhas": 66094,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-09": {
+   "linhas": 72995,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-10": {
+   "linhas": 71298,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-11": {
+   "linhas": 61686,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2024-12": {
+   "linhas": 70731,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-01": {
+   "linhas": 67816,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-02": {
+   "linhas": 64506,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-03": {
+   "linhas": 75265,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-04": {
+   "linhas": 72244,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-05": {
+   "linhas": 68239,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-06": {
+   "linhas": 72339,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-07": {
+   "linhas": 65316,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-08": {
+   "linhas": 53922,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-09": {
+   "linhas": 64268,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-10": {
+   "linhas": 62859,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-11": {
+   "linhas": 62263,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2025-12": {
+   "linhas": 75580,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-01": {
+   "linhas": 65659,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-02": {
+   "linhas": 65020,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-03": {
+   "linhas": 77163,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-04": {
+   "linhas": 70078,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-05": {
+   "linhas": 66623,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-06": {
+   "linhas": 77875,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-07": {
+   "linhas": 72049,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-08": {
+   "linhas": 75771,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-09": {
+   "linhas": 74037,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  }
+ }
+}

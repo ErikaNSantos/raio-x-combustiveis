@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import time
 import unicodedata
 import urllib.request
 from pathlib import Path
@@ -16,10 +17,17 @@ ESTADOS = "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
 MUNICIPIOS = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado"
 
 
-def _get(url: str):
+def _get(url: str, tentativas: int = 5):
     req = urllib.request.Request(url, headers={"User-Agent": "raio-x-combustiveis"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        corpo = resp.read()
+    for i in range(tentativas):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                corpo = resp.read()
+            break
+        except OSError:  # a API do IBGE às vezes derruba a conexão
+            if i == tentativas - 1:
+                raise
+            time.sleep(2 ** (i + 1))
     # A API de malhas responde em gzip mesmo sem Accept-Encoding: detecta pelos bytes mágicos.
     if corpo[:2] == b"\x1f\x8b":
         corpo = gzip.decompress(corpo)

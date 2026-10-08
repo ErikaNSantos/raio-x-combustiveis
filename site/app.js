@@ -17,13 +17,14 @@
   const LIMIAR_ETANOL = 0.7;
   const MIN_POSTOS_CAPITAL = 5;
 
+  const lista = new Intl.ListFormat("pt-BR", { type: "conjunction" });
   const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
   const pct = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1, signDisplay: "exceptZero" });
   const razao = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 0 });
   // Uma casa decimal perto do limiar: 70,1% não pode aparecer como "70%" e parecer que compensa.
   const razao1 = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-  const estado = { produto: "gasolina", real: true, uf: "BA", municipio: null };
+  const estado = { produto: "gasolina", real: true, uf: "BA", municipio: null, janela: 0 };
   let R = null; // resumo.json
   const cacheMunicipios = {};
 
@@ -39,6 +40,24 @@
 
   /* ---------- dados ---------- */
 
+  const mesSeguinte = (p) => (p.slice(5) === "12" ? `${+p.slice(0, 4) + 1}-01` : `${p.slice(0, 5)}${String(+p.slice(5) + 1).padStart(2, "0")}`);
+
+  /** O JSON vem colunar ({p: primeiro mês, campo: [um valor por mês]}); aqui vira uma linha por mês com dado. */
+  function descompactar(series) {
+    for (const porProduto of Object.values(series)) {
+      for (const [prod, s] of Object.entries(porProduto)) {
+        const out = [];
+        let p = s.p;
+        for (let i = 0; i < s.mediana.length; i++, p = mesSeguinte(p)) {
+          if (s.mediana[i] == null) continue;
+          out.push([p, s.mediana[i], s.p10?.[i] ?? null, s.p90?.[i] ?? null, s.minimo?.[i] ?? null, s.maximo?.[i] ?? null, s.postos?.[i] ?? null]);
+        }
+        porProduto[prod] = out;
+      }
+    }
+    return series;
+  }
+
   function linhas(codigo, produto, fonte) {
     const s = (fonte || R.series)[codigo];
     return (s && s[produto]) || [];
@@ -51,7 +70,12 @@
   }
   /** Todos os meses do intervalo, inclusive os que a ANP não publicou (viram buraco na linha). */
   function eixoMeses() {
-    return [...new Set([...R.periodos, ...R.meses_faltando])].sort();
+    if (!eixoMeses.cache) {
+      const meses = [R.periodos[0]];
+      while (meses[meses.length - 1] < ultimo()) meses.push(mesSeguinte(meses[meses.length - 1]));
+      eixoMeses.cache = meses;
+    }
+    return eixoMeses.cache;
   }
   function serieCompleta(codigo, produto, fonte, campo = "mediana") {
     const mapa = new Map(linhas(codigo, produto, fonte).map((l) => [l[I.periodo], l]));
@@ -165,7 +189,7 @@
         rotulo: `Em 12 meses (${estado.real ? "já descontada a inflação" : "sem descontar a inflação"})`,
         valor: br && brAntes ? pct.format(valor(br) / valor(brAntes) - 1) : "—",
         classe: br && brAntes ? (valor(br) > valor(brAntes) ? "sobe" : "desce") : "",
-        detalhe: brAntes ? `${mesCurto(anoAntes)}: ${brl.format(valor(brAntes))} → ${mesCurto(p)}: ${brl.format(valor(br))}` : "série começa em jan/23",
+        detalhe: brAntes ? `${mesCurto(anoAntes)}: ${brl.format(valor(brAntes))} → ${mesCurto(p)}: ${brl.format(valor(br))}` : "sem dado um ano antes",
       },
       {
         rotulo: "Diferença entre estados",
@@ -414,7 +438,18 @@
   }
 
   /** Gráfico de linhas genérico com crosshair. series: [{rotulo, cor, pontos:[{p,d,v}], faixa?}] */
-  function linhasNoTempo(el, series, rotuloAria) {
+  /** Corta as séries no período escolhido e no primeiro mês em que alguma tem dado (o S10 só começa em 2012). */
+  function recortar(series) {
+    const ult = ultimo();
+    const desde = estado.janela ? `${+ult.slice(0, 4) - estado.janela}${ult.slice(4)}` : "";
+    const pts = series[0].pontos;
+    let i0 = pts.findIndex((d, i) => d.p > desde && series.some((s) => s.pontos[i].v != null));
+    if (i0 < 0) i0 = 0;
+    return series.map((s) => ({ ...s, pontos: s.pontos.slice(i0), faixa: s.faixa && s.faixa.slice(i0) }));
+  }
+
+  function linhasNoTempo(el, seriesInteiras, rotuloAria) {
+    const series = recortar(seriesInteiras);
     const largura = larguraDe(el);
     const altura = Math.max(240, Math.round(largura * 0.42));
     const m = { t: 12, r: 86, b: 28, l: 64 };
@@ -427,7 +462,7 @@
 
     svg.append("g").attr("class", "grade").selectAll("line").data(y.ticks(5)).join("line").attr("x1", m.l).attr("x2", largura - m.r).attr("y1", y).attr("y2", y);
     svg.append("g").attr("class", "eixo").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat((v) => brl.format(v)).tickSize(0).tickPadding(8));
-    svg.append("g").attr("class", "eixo").attr("transform", `translate(0,${altura - m.b})`).call(d3.axisBottom(x).ticks(largura < 600 ? 4 : 8).tickFormat((d) => `${MESES[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`).tickSize(0).tickPadding(8));
+    svg.append("g").attr("class", "eixo").attr("transform", `translate(0,${altura - m.b})`).call(d3.axisBottom(x).ticks(largura < 600 ? 4 : 8).tickFormat((d) => (d.getMonth() === 0 && series[0].pontos.length > 48 ? String(d.getFullYear()) : `${MESES[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`)).tickSize(0).tickPadding(8));
 
     for (const s of series) {
       if (s.faixa) {
@@ -507,7 +542,7 @@
     const aviso = $("aviso-falta");
     if (R.meses_faltando.length) {
       aviso.hidden = false;
-      aviso.textContent = `A ANP não publicou os dados de ${R.meses_faltando.map(mesLongo).join(", ")}; o buraco na linha é esse mês, não um erro.`;
+      aviso.textContent = `Não há dados da ANP para ${lista.format(R.meses_faltando.map(mesLongo))}; os buracos na linha são esses meses, não um erro.`;
     }
     tabela(
       $("t-evolucao"),
@@ -574,7 +609,9 @@
   async function municipiosDa(uf) {
     if (!cacheMunicipios[uf]) {
       const r = await fetch(`data/municipios/${uf}.json`);
-      cacheMunicipios[uf] = r.ok ? await r.json() : {};
+      const arq = r.ok ? await r.json() : {};
+      if (arq.series) descompactar(arq.series);
+      cacheMunicipios[uf] = arq;
     }
     return cacheMunicipios[uf];
   }
@@ -627,12 +664,12 @@
     const el = $("texto-metodo");
     const ul = document.createElement("ul");
     const itens = [
-      `Fonte: Série Histórica de Preços de Combustíveis da ANP (levantamento semanal nos postos), arquivos mensais de ${mesLongo(R.periodos[0])} a ${mesLongo(ultimo())}. São ${linhasTotal.toLocaleString("pt-BR")} coletas no total.`,
+      `Fonte: Série Histórica de Preços de Combustíveis da ANP (levantamento semanal nos postos), de ${mesLongo(R.periodos[0])} a ${mesLongo(ultimo())}: os arquivos semestrais consolidados e, nos meses que eles ainda não cobrem, os mensais. São ${linhasTotal.toLocaleString("pt-BR")} coletas no total, reunidas numa base única em Parquet montada com DuckDB.`,
       "Preço de cada posto no mês = mediana das coletas daquele posto. Assim um posto visitado várias vezes não pesa mais que um visitado uma vez. Os números de estado, capital e Brasil são a mediana desses preços por posto.",
       `Correção pela inflação: IPCA do IBGE (tabela 1737), levando todos os meses a reais de ${mesLongo(R.ipca.base)}. Meses mais recentes que o último IPCA divulgado ficam no valor nominal até o índice sair.`,
       `Preços fora da faixa de R$ 0,30 a R$ 15 são tratados como erro de digitação e descartados: ${descartadas.toLocaleString("pt-BR")} coletas até agora.`,
-      R.meses_faltando.length ? `A ANP não publicou os arquivos de ${R.meses_faltando.map(mesLongo).join(", ")}.` : "Nenhum mês faltando no período.",
-      "A pesquisa da ANP é uma amostra (cerca de 400 municípios e 6 mil postos por mês), não um censo. Ela não traz o preço de compra pelo posto, então não dá para calcular margem.",
+      R.meses_faltando.length ? `Não há dados da ANP para ${lista.format(R.meses_faltando.map(mesLongo))}.` : "Nenhum mês faltando no período.",
+      "A pesquisa da ANP é uma amostra (hoje cerca de 400 municípios e 6 mil postos por mês), não um censo, e o tamanho dela mudou ao longo dos anos. O diesel S10 só entra na pesquisa em 2012.",
       "Regra dos 70%: é uma aproximação. O rendimento real do etanol em relação à gasolina varia com o carro e o jeito de dirigir.",
     ];
     for (const t of itens) {
@@ -694,6 +731,11 @@
         })
     );
     $("f-uf").addEventListener("change", (e) => definirUF(e.target.value));
+    $("f-janela").addEventListener("change", (e) => {
+      estado.janela = +e.target.value;
+      renderEvolucao();
+      renderMunicipio();
+    });
     $("f-municipio").addEventListener("change", (e) => {
       estado.municipio = e.target.value;
       renderMunicipio();
@@ -738,6 +780,7 @@
     try {
       const [resumo, malha] = await Promise.all([fetch("data/resumo.json").then((r) => r.json()), fetch("data/ufs.geojson").then((r) => r.json())]);
       R = resumo;
+      descompactar(R.series);
       geo = malha;
     } catch (erro) {
       $("selo").textContent = "Não foi possível carregar os dados. Tente recarregar a página.";
