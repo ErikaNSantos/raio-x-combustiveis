@@ -50,13 +50,25 @@ SELECT
     TRY_CAST(replace(nullif(trim("Valor de Compra"), ''), ',', '.') AS DOUBLE)         AS preco_compra,
     trim("Unidade de Medida")                                                          AS unidade,
     upper(trim("Bandeira"))                                                            AS bandeira
-FROM read_csv({arquivo}, delim=';', header=true, all_varchar=true, quote='"')
+FROM read_csv({arquivo}, delim=';', header=true, all_varchar=true, quote='"', encoding={codificacao})
 """
 
 
 def _lit(texto: str) -> str:
     """Literal SQL. Os caminhos são gerados por este script, mas escapar não custa nada."""
     return "'" + texto.replace("'", "''") + "'"
+
+
+def codificacao(csv: Path) -> str:
+    """Quase todos vêm em UTF-8; o 2º semestre de 2021 veio em latin-1."""
+    with open(csv, "rb") as f:
+        amostra = f.read(4 << 20)
+    try:
+        amostra.decode("utf-8")
+    except UnicodeDecodeError as erro:
+        if erro.start < len(amostra) - 4:  # não é só um caractere cortado no fim da amostra
+            return "latin-1"
+    return "utf-8"
 
 
 def baixar(url: str, destino: Path, tentativas: int = 12) -> None:
@@ -177,7 +189,7 @@ def _construir_ano(con, ano, arquivos, por_mes, saida, manifesto, manter, nomes)
             lista_meses = ", ".join(_lit(m) for m in meses)
             con.execute(
                 f"""COPY (
-                    SELECT * FROM ({SELECT_PADRAO.format(arquivo=_lit(str(csv)))})
+                    SELECT * FROM ({SELECT_PADRAO.format(arquivo=_lit(str(csv)), codificacao=_lit(codificacao(csv)))})
                     WHERE strftime(data, '%Y-%m') IN ({lista_meses})
                 ) TO {_lit(str(parte))} (FORMAT parquet, COMPRESSION zstd)"""
             )

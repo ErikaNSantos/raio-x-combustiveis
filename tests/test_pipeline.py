@@ -138,3 +138,41 @@ def test_plano_prefere_semestral_e_usa_mensal_so_no_que_falta():
     assert [a.url for a in por_mes["2026-03"]] == ["s"]  # coberto pelo semestral: mensal ignorado
     assert [a.url for a in por_mes["2026-04"]] == ["s"]  # mês que falta nos mensais vem do semestral
     assert [a.url for a in por_mes["2026-07"]] == ["m7"]  # depois do último semestral: mensal
+
+
+def test_agregacao_em_sql_bate_com_a_do_pandas(csv_anp, tmp_path):
+    import duckdb
+
+    from base.construir import SELECT_PADRAO, _lit
+    from pipeline.historico import agregar_parquet
+
+    parquet = tmp_path / "ano.parquet"
+    duckdb.execute(f"COPY ({SELECT_PADRAO.format(arquivo=_lit(str(csv_anp)), codificacao="'utf-8'")}) TO {_lit(str(parquet))} (FORMAT parquet)")
+    sql, qual_sql = agregar_parquet(parquet)
+    pd_, qual_pd = agregar_arquivo(csv_anp, "2026-09")
+    chaves = ["periodo", "nivel", "codigo", "produto"]
+    pd.testing.assert_frame_equal(
+        sql.sort_values(chaves).reset_index(drop=True),
+        pd_.sort_values(chaves).reset_index(drop=True),
+        check_dtype=False,
+    )
+    assert qual_sql == {"2026-09": qual_pd}
+
+
+def test_serie_colunar_deixa_buraco_no_mes_sem_dado():
+    from pipeline.publicar import _serie
+
+    g = pd.DataFrame({"periodo": ["2026-03", "2026-05"], "mediana": [6.5, 6.7], "postos": [10, 12]})
+    assert _serie(g, ["mediana", "postos"]) == {"p": "2026-03", "mediana": [6.5, None, 6.7], "postos": [10, None, 12]}
+
+
+def test_le_csv_em_latin1(tmp_path):
+    import duckdb
+
+    from base.construir import SELECT_PADRAO, _lit, codificacao
+
+    csv = tmp_path / "latin1.csv"
+    csv.write_bytes(CSV.replace("SAO PAULO", "SÃO PAULO").replace("\n", "\r\n").encode("latin-1"))
+    assert codificacao(csv) == "latin-1"
+    linhas = duckdb.execute(SELECT_PADRAO.format(arquivo=_lit(str(csv)), codificacao=_lit(codificacao(csv)))).fetchall()
+    assert len(linhas) == 7 and linhas[-1][3] == "SÃO PAULO"
