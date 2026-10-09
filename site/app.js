@@ -10,6 +10,7 @@
     diesel: "Diesel comum",
     gasolina_aditivada: "Gasolina aditivada",
     gnv: "GNV",
+    glp: "Gás de cozinha (botijão 13 kg)",
   };
   const I = { periodo: 0, mediana: 1, p10: 2, p90: 3, minimo: 4, maximo: 5, postos: 6 };
   const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
@@ -29,7 +30,12 @@
   const cacheMunicipios = {};
 
   const $ = (id) => document.getElementById(id);
-  const unidade = (p) => (p === "gnv" ? "R$/m³" : "R$/litro");
+  const unidade = (p) => (p === "gnv" ? "R$/m³" : p === "glp" ? "R$ por botijão de 13 kg" : "R$/litro");
+  // O botijão também é vendido por revendas que não são postos.
+  const quem = (p) => (p === "glp" ? "revendas" : "postos");
+  /** Meses sem coleta da família do produto (combustíveis e GLP têm buracos diferentes). */
+  const faltando = (p = estado.produto) =>
+    (R.meses_faltando_por_familia && R.meses_faltando_por_familia[p === "glp" ? "glp" : "combustiveis"]) || R.meses_faltando;
   const mesCurto = (p) => `${MESES[+p.slice(5) - 1]}/${p.slice(2, 4)}`;
   const mesLongo = (p) => `${MESES_LONGOS[+p.slice(5) - 1]} de ${p.slice(0, 4)}`;
   const data = (p) => new Date(+p.slice(0, 4), +p.slice(5) - 1, 1);
@@ -161,6 +167,24 @@
 
   /* ---------- seções ---------- */
 
+  /** Quanto do salário mínimo do mês vai num botijão (os dois em valores do próprio mês). */
+  function tileSalario(p) {
+    const fracao = (per) => {
+      const l = linhaDoMes("BR", "glp", per);
+      const sm = R.salario_minimo && R.salario_minimo[per];
+      return l && sm ? l[I.mediana] / sm : null;
+    };
+    const agora = fracao(p);
+    const inicio = linhas("BR", "glp").find((l) => fracao(l[I.periodo]) != null);
+    const antes = inicio && fracao(inicio[I.periodo]);
+    const pct0 = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
+    return {
+      rotulo: "Do salário mínimo, num botijão",
+      valor: agora != null ? pct0.format(agora) : "—",
+      detalhe: antes != null ? `${pct0.format(antes)} em ${mesCurto(inicio[I.periodo])} · mínimo de ${brl.format(R.salario_minimo[p])}` : "",
+    };
+  }
+
   function renderIndicadores() {
     const p = ultimo();
     const prod = estado.produto;
@@ -177,13 +201,13 @@
     const compensa = razoesEtanol(p).filter((r) => r.razao <= LIMIAR_ETANOL);
 
     $("lead-agora").textContent =
-      `${PRODUTOS[prod]} em ${mesLongo(p)}, preço mediano dos postos pesquisados pela ANP (${unidade(prod)}).`;
+      `${PRODUTOS[prod]} em ${mesLongo(p)}, preço mediano das ${quem(prod)} pesquisadas pela ANP (${unidade(prod)}).`;
 
     const tiles = [
       {
         rotulo: "Preço mediano no Brasil",
         valor: br ? brl.format(valor(br)) : "—",
-        detalhe: br ? `${br[I.postos].toLocaleString("pt-BR")} postos pesquisados` : "sem dado no mês",
+        detalhe: br ? `${br[I.postos].toLocaleString("pt-BR")} ${quem(prod)} pesquisadas` : "sem dado no mês",
       },
       {
         rotulo: `Em 12 meses (${estado.real ? "já descontada a inflação" : "sem descontar a inflação"})`,
@@ -196,7 +220,7 @@
         valor: caro && barato ? brl.format(valor(caro.l) - valor(barato.l)) : "—",
         detalhe: caro ? `${caro.uf} ${brl.format(valor(caro.l))} · ${barato.uf} ${brl.format(valor(barato.l))}` : "",
       },
-      {
+      prod === "glp" ? tileSalario(p) : {
         rotulo: "Estados onde o etanol compensa",
         valor: `${compensa.length} de ${razoesEtanol(p).length}`,
         detalhe: "etanol abaixo de 70% da gasolina",
@@ -502,7 +526,7 @@
         const i = d3.minIndex(meses, (d) => Math.abs(x(d) - px));
         cruz.attr("x1", x(meses[i])).attr("x2", x(meses[i])).style("opacity", 1);
         const p = series[0].pontos[i].p;
-        const faltou = R.meses_faltando.includes(p);
+        const faltou = faltando().includes(p);
         mostrarTip(
           ev,
           faltou ? `${mesCurto(p)} · a ANP não publicou este mês` : mesCurto(p),
@@ -540,9 +564,9 @@
       `Evolução do preço de ${PRODUTOS[prod]} em ${nomeUF(uf)} e no Brasil`
     );
     const aviso = $("aviso-falta");
-    if (R.meses_faltando.length) {
-      aviso.hidden = false;
-      aviso.textContent = `Não há dados da ANP para ${lista.format(R.meses_faltando.map(mesLongo))}; os buracos na linha são esses meses, não um erro.`;
+    aviso.hidden = !faltando().length;
+    if (faltando().length) {
+      aviso.textContent = `Não há dados da ANP para ${lista.format(faltando().map(mesLongo))}; os buracos na linha são esses meses, não um erro.`;
     }
     tabela(
       $("t-evolucao"),
@@ -594,7 +618,7 @@
           { valor: `${brl.format(d.p10)} a ${brl.format(d.p90)}`, rotulo: "faixa de 80%" },
           { valor: brl.format(d.med), rotulo: "mediana" },
           { valor: `${brl.format(d.min)} a ${brl.format(d.max)}`, rotulo: "mais barato a mais caro" },
-          { valor: d.l[I.postos], rotulo: "postos pesquisados" },
+          { valor: d.l[I.postos], rotulo: `${quem(prod)} pesquisadas` },
         ])
       )
       .on("pointerleave", esconderTip);
@@ -636,16 +660,21 @@
     const mun = estado.municipio;
     const fonte = { [mun]: dados[mun] || {} };
     // Três primeiros espaços da paleta validada (seguros juntos para daltonismo)
-    const series = [
-      { prod: "gasolina", cor: "var(--series-1)" },
-      { prod: "etanol", cor: "var(--series-2)" },
-      { prod: "diesel_s10", cor: "var(--series-3)" },
-    ]
+    // O botijão (R$ ~100) não cabe no mesmo eixo que o litro (R$ ~6): com GLP escolhido, ele aparece sozinho.
+    const series = (
+      estado.produto === "glp"
+        ? [{ prod: "glp", cor: "var(--series-1)" }]
+        : [
+            { prod: "gasolina", cor: "var(--series-1)" },
+            { prod: "etanol", cor: "var(--series-2)" },
+            { prod: "diesel_s10", cor: "var(--series-3)" },
+          ]
+    )
       .map((s) => ({ ...s, rotulo: PRODUTOS[s.prod], pontos: serieCompleta(mun, s.prod, fonte) }))
       .filter((s) => s.pontos.some((d) => d.v != null));
     legenda($("leg-municipio"), series.map((s) => ({ cor: s.cor, rotulo: s.rotulo })));
     if (!series.length) {
-      $("g-municipio").textContent = "Sem dados de gasolina, etanol ou diesel S10 para este município.";
+      $("g-municipio").textContent = estado.produto === "glp" ? "Sem dados do botijão para este município." : "Sem dados de gasolina, etanol ou diesel S10 para este município.";
       $("t-municipio").replaceChildren();
       return;
     }
@@ -668,7 +697,8 @@
       "Preço de cada posto no mês = mediana das coletas daquele posto. Assim um posto visitado várias vezes não pesa mais que um visitado uma vez. Os números de estado, capital e Brasil são a mediana desses preços por posto.",
       `Correção pela inflação: IPCA do IBGE (tabela 1737), levando todos os meses a reais de ${mesLongo(R.ipca.base)}. Meses mais recentes que o último IPCA divulgado ficam no valor nominal até o índice sair.`,
       `Preços fora da faixa de R$ 0,30 a R$ 15 são tratados como erro de digitação e descartados: ${descartadas.toLocaleString("pt-BR")} coletas até agora.`,
-      R.meses_faltando.length ? `Não há dados da ANP para ${lista.format(R.meses_faltando.map(mesLongo))}.` : "Nenhum mês faltando no período.",
+      R.meses_faltando.length ? `Não há dados da ANP de combustíveis para ${lista.format(R.meses_faltando.map(mesLongo))}.` : "Nenhum mês faltando no período.",
+      "Gás de cozinha: preço do botijão de 13 kg nas revendas pesquisadas (postos e distribuidoras de gás), com faixa válida de R$ 10 a R$ 400. O salário mínimo vem do Banco Central (SGS, série 1619).",
       "A pesquisa da ANP é uma amostra (hoje cerca de 400 municípios e 6 mil postos por mês), não um censo, e o tamanho dela mudou ao longo dos anos. O diesel S10 só entra na pesquisa em 2012.",
       "Regra dos 70%: é uma aproximação. O rendimento real do etanol em relação à gasolina varia com o carro e o jeito de dirigir.",
     ];

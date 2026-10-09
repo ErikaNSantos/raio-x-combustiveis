@@ -178,3 +178,47 @@ def test_le_csv_em_latin1(tmp_path):
     assert codificacao(csv) == "latin-1"
     linhas = duckdb.execute(SELECT_PADRAO.format(arquivo=_lit(str(csv)), codificacao=_lit(codificacao(csv)))).fetchall()
     assert len(linhas) == 7 and linhas[-1][3] == "SÃO PAULO"
+
+
+def test_botijao_tem_faixa_propria():
+    df = pd.DataFrame(
+        {
+            "uf": ["BA", "BA", "BA"],
+            "municipio": ["SALVADOR"] * 3,
+            "cnpj": ["1", "2", "3"],
+            "produto": ["GLP", "GLP", "GASOLINA"],
+            "preco": [120.0, 5.0, 120.0],  # botijão ok · botijão digitado errado · gasolina absurda
+        }
+    )
+    postos, qualidade = precos_por_posto(df)
+    assert postos[["produto", "preco"]].values.tolist() == [["glp", 120.0]]
+    assert qualidade["descartadas_faixa"] == 2
+
+
+def test_faixa_do_botijao_vale_tambem_no_sql(tmp_path):
+    import duckdb
+
+    from pipeline.historico import agregar_parquet
+
+    parquet = tmp_path / "glp.parquet"
+    duckdb.execute(
+        f"""COPY (SELECT * FROM (VALUES
+              (DATE '2026-09-01', 'BA', 'SALVADOR', '1', 'GLP', 120.0),
+              (DATE '2026-09-01', 'BA', 'SALVADOR', '2', 'GLP', 5.0)
+            ) t(data, uf, municipio, cnpj, produto, preco_venda)) TO '{parquet}' (FORMAT parquet)"""
+    )
+    resumo, qualidade = agregar_parquet(parquet)
+    br = resumo[resumo.nivel == "BR"].iloc[0]
+    assert (br.produto, br.postos, br.mediana) == ("glp", 1, 120.0)
+    assert qualidade["2026-09"]["descartadas_faixa"] == 1
+
+
+def test_salario_minimo_por_mes():
+    from pipeline import salario
+
+    assert salario.parse([{"data": "01/05/2004", "valor": "260.00"}]) == {"2004-05": 260.0}
+
+
+def test_semestral_de_glp_le_nome_sem_hifen():
+    html = '<a href="https://x/shpc/dsas/glp/precos-semestrais-glp2021-01.csv">Preços</a>'
+    assert [a.periodo for a in fontes.extrair_semestrais(html, "glp")] == ["2021-01"]

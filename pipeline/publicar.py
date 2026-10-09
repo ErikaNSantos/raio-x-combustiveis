@@ -73,6 +73,7 @@ def publicar(
     ufs: dict[str, str],
     qualidade: dict,
     nomes_ibge: dict[str, str] | None = None,
+    extras: dict | None = None,
 ) -> dict:
     periodos = sorted(agregados["periodo"].unique())
     topo = agregados[agregados["nivel"].isin(["BR", "UF"])]
@@ -98,6 +99,7 @@ def publicar(
         "nomes_capitais": {f"{uf}|{n}": nome_bonito(f"{uf}|{n}") for uf, n in CAPITAIS.items()},
         "series": _series(pd.concat([topo, capitais])),
         "qualidade": qualidade,
+        **(extras or {}),
     }
     _gravar(destino / "resumo.json", resumo)
 

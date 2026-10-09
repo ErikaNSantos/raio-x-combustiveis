@@ -22,11 +22,19 @@ PRODUTOS = {
     "DIESEL": "diesel",
     "DIESEL S10": "diesel_s10",
     "GNV": "gnv",
+    "GLP": "glp",  # botijão de 13 kg, em R$ por botijão
 }
 
 # Faixa plausível de preço (R$/litro ou R$/m³), de 2004 (etanol a R$ 0,90) até hoje. Fora dela é erro de digitação,
 # como 0,00 ou 59,90 no lugar de 5,99. Linhas descartadas são contadas, não escondidas.
 FAIXA_VALIDA = (0.3, 15.0)
+# O botijão é vendido por unidade: R$ 30 em 2004, perto de R$ 130 hoje.
+FAIXAS = {"glp": (10.0, 400.0)}
+
+
+def faixa(produto: str) -> tuple[float, float]:
+    """Faixa válida de preço para um produto (nome nosso, ex.: 'glp')."""
+    return FAIXAS.get(produto, FAIXA_VALIDA)
 
 CAPITAIS = {
     "AC": "RIO BRANCO", "AL": "MACEIO", "AP": "MACAPA", "AM": "MANAUS", "BA": "SALVADOR",
@@ -72,9 +80,11 @@ def precos_por_posto(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     total = len(df)
     df = df[df["produto"].isin(PRODUTOS)]
     fora_escopo = total - len(df)
-    validos = df["preco"].between(*FAIXA_VALIDA)
+    df = df.assign(produto=df["produto"].map(PRODUTOS))
+    limites = df["produto"].map(faixa)
+    validos = (df["preco"] >= limites.str[0]) & (df["preco"] <= limites.str[1])
     descartadas = int((~validos).sum())
-    df = df[validos].assign(produto=lambda d: d["produto"].map(PRODUTOS))
+    df = df[validos]
     postos = df.groupby(["uf", "municipio", "cnpj", "produto"], as_index=False).agg(
         preco=("preco", "median"), coletas=("preco", "size")
     )
