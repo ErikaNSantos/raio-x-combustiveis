@@ -553,7 +553,7 @@
     legenda($("leg-evolucao"), [
       { cor: "var(--series-1)", rotulo: nomeUF(uf) },
       { cor: "var(--series-2)", rotulo: "Brasil" },
-      { cor: "var(--series-1)", bloco: true, opacidade: 0.25, rotulo: `Faixa de 80% dos postos em ${uf}` },
+      { cor: "var(--series-1)", bloco: true, opacidade: 0.25, rotulo: `Faixa de 80% d${estado.produto === "glp" ? "as revendas" : "os postos"} em ${uf}` },
     ]);
     linhasNoTempo(
       $("g-evolucao"),
@@ -586,7 +586,7 @@
       .map((d) => ({ ...d, dif: d.p90 - d.p10 }))
       .sort((a, b) => b.dif - a.dif);
     legenda($("leg-capitais"), [
-      { cor: "var(--series-1)", rotulo: "Faixa de 80% dos postos (sem os 10% mais baratos e os 10% mais caros)" },
+      { cor: "var(--series-1)", rotulo: `Faixa de 80% d${estado.produto === "glp" ? "as revendas" : "os postos"} (sem os 10% mais baratos e os 10% mais caros)` },
       { cor: "var(--ink)", bloco: true, rotulo: "Mediana da cidade" },
     ]);
     const largura = larguraDe(el);

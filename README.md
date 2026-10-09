@@ -1,10 +1,10 @@
 # Raio-X dos Combustíveis
 
-Quanto custa abastecer em cada estado, capital e município pesquisado pela ANP desde 2004, quando o etanol compensa mais que a gasolina e quanto o preço muda dentro da mesma cidade. Com os preços corrigidos pela inflação.
+Quanto custa abastecer (e comprar o botijão de gás) em cada estado, capital e município pesquisado pela ANP desde 2004, quando o etanol compensa mais que a gasolina e quanto o preço muda dentro da mesma cidade. Com os preços corrigidos pela inflação.
 
 **Página:** https://erikansantos.github.io/raio-x-combustiveis/
 
-**Base de dados:** todas as coletas da ANP desde 2004 em Parquet, um arquivo por ano, na [Release `base-combustiveis`](https://github.com/ErikaNSantos/erikansantos.github.io/releases/tag/base-combustiveis). Dá para consultar direto do DuckDB, sem baixar nada:
+**Base de dados:** todas as coletas da ANP desde 2004 em Parquet, um arquivo por ano (`combustiveis_AAAA` e `glp_AAAA`), na [Release `base-combustiveis`](https://github.com/ErikaNSantos/erikansantos.github.io/releases/tag/base-combustiveis). Dá para consultar direto do DuckDB, sem baixar nada:
 
 ```sql
 INSTALL httpfs; LOAD httpfs;
@@ -24,6 +24,7 @@ página da ANP ──► base/construir.py      acha os links (semestrais e mens
                   pipeline/historico.py  baixa só os anos que mudaram e agrega em SQL:
                                          preço por posto → mediana por município, UF e Brasil
 IBGE (SIDRA) ───► pipeline/ipca.py       IPCA para corrigir pela inflação
+Banco Central ──► pipeline/salario.py    salário mínimo (quanto dele vai num botijão)
 IBGE (malhas) ──► pipeline/malha.py      contorno das UFs para o mapa
                   pipeline/publicar.py   JSONs colunares em site/data/
 GitHub Actions ─► segunda, 6h: atualiza a base (workflow no repositório do portfólio)
@@ -37,6 +38,7 @@ GitHub Actions ─► segunda, 6h: atualiza a base (workflow no repositório do 
 - **Uma base só, desde 2004.** A ANP publica a série em dois formatos: arquivos semestrais consolidados (2004 em diante) e arquivos mensais (2023 em diante). A base usa o semestral sempre que ele cobre o mês e o mensal só nos meses ainda não consolidados, então nenhum mês entra duas vezes. Nos meses em que os dois existem, os números batem exatamente; abril de 2026, que não saiu no mensal, veio do semestral. O `manifesto.json` da Release diz de qual arquivo veio cada mês.
 - **Parquet por ano, fora do git.** São 25,5 milhões de coletas (maio de 2004 a setembro de 2026) em vários GB de CSV; em Parquet com ZSTD a base inteira tem 197 MB, em 23 arquivos, e fica numa Release sem inchar o histórico do repositório.
 - **Incremental.** Cada ano agregado vira um CSV pequeno em `data/agregados/` (versionado), com a assinatura do ano em `data/versoes.json`. Uma atualização semanal reagrega só o ano corrente.
+- **O botijão é outra escala.** O GLP é vendido por unidade (R$ 30 em 2004, ~R$ 115 hoje), então tem faixa válida própria (R$ 10 a R$ 400) e, no gráfico do município, aparece sozinho em vez de dividir o eixo com o litro.
 - **Mesmo método, testado.** A agregação em SQL é comparada nos testes com a versão original em pandas, e as duas dão o mesmo resultado.
 - **Meses sem dados aparecem como buraco**, não como linha ligando os vizinhos. A ANP não tem coletas em junho de 2014 nem em setembro de 2020 (e os meses vizinhos têm poucas).
 - **A fonte tem surpresas.** O 1º semestre de 2022 foi publicado sem ano no nome do arquivo (o ano vem do texto do link), o 2º semestre de 2021 veio em latin-1 em vez de UTF-8, e o gov.br derruba downloads grandes no meio (o download retoma de onde parou).
@@ -46,7 +48,7 @@ GitHub Actions ─► segunda, 6h: atualiza a base (workflow no repositório do 
 
 - A ANP pesquisa uma amostra (hoje cerca de 400 municípios e 6 mil postos por mês), não todos, e o tamanho dela mudou ao longo dos anos. O diesel S10 só entra em 2012.
 - O preço de compra pelo posto só vem preenchido até cerca de 2020; a base guarda a coluna, mas a página não calcula margem.
-- Preços fora de R$ 0,30 a R$ 15 são descartados como erro de digitação; a contagem fica em `data/qualidade.json`.
+- Preços fora de R$ 0,30 a R$ 15 (combustíveis) ou de R$ 10 a R$ 400 (botijão) são descartados como erro de digitação; a contagem fica em `data/qualidade.json`.
 - A regra dos 70% para o etanol é uma aproximação; o rendimento real varia com o carro.
 
 ## Rodar localmente
@@ -63,5 +65,6 @@ python -m http.server -d site 8000
 
 - ANP, [Série Histórica de Preços de Combustíveis](https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis)
 - IBGE, [IPCA (SIDRA, tabela 1737)](https://sidra.ibge.gov.br/tabela/1737) e [API de malhas territoriais](https://servicodados.ibge.gov.br/api/docs/malhas)
+- Banco Central, [salário mínimo (SGS, série 1619)](https://www3.bcb.gov.br/sgspub/)
 
 Código sob licença MIT. Feito por [Érika Nogueira Santos](https://erikansantos.github.io).
