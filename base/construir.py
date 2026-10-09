@@ -13,8 +13,12 @@ Fontes, escolhidas mês a mês:
 - arquivos mensais (`dsan`) só para os meses que nenhum semestral cobre ainda.
 Assim nenhum mês entra duas vezes, e meses que faltam nos mensais (abril/2026) vêm do semestral.
 
-Saída: um Parquet por ano (`combustiveis_AAAA.parquet`, ZSTD) com uma linha por coleta,
-mais `manifesto.json` dizendo de qual arquivo veio cada mês e quantas linhas entraram.
+Duas famílias, com o mesmo formato de coluna:
+- `combustiveis` (gasolina, etanol, diesel, GNV): `combustiveis_AAAA.parquet` + `manifesto.json`;
+- `glp` (botijão de 13 kg): `glp_AAAA.parquet` + `manifesto_glp.json`.
+
+Cada Parquet (ZSTD) tem uma linha por coleta; o manifesto diz de qual arquivo veio cada mês
+e quantas linhas entraram.
 """
 
 from __future__ import annotations
@@ -110,6 +114,13 @@ def meses_do(arq: fontes.Arquivo) -> list[str]:
     return [f"{arq.ano}-{m:02d}" for m in range(inicio, fim + 1)]
 
 
+# família → (pasta dos semestrais, grupos de arquivo mensal, prefixo dos arquivos de saída)
+FAMILIAS = {
+    "combustiveis": ("ca", ("gasolina-etanol", "diesel-gnv"), "combustiveis", "manifesto.json"),
+    "glp": ("glp", ("glp",), "glp", "manifesto_glp.json"),
+}
+
+
 def plano(semestrais: list[fontes.Arquivo], mensais: list[fontes.Arquivo]) -> dict[str, list[fontes.Arquivo]]:
     """{mês: [arquivos]}. Semestral quando existe; senão os mensais daquele mês."""
     cobertos = {m for a in semestrais for m in meses_do(a)}
@@ -123,10 +134,17 @@ def plano(semestrais: list[fontes.Arquivo], mensais: list[fontes.Arquivo]) -> di
     return dict(sorted(por_mes.items()))
 
 
-def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = None, refazer: bool = False) -> tuple[dict, list[int]]:
+def construir(
+    saida: Path,
+    anos: set[int] | None = None,
+    manter: Path | None = None,
+    refazer: bool = False,
+    familia: str = "combustiveis",
+) -> tuple[dict, list[int]]:
+    pasta, grupos, prefixo, nome_manifesto = FAMILIAS[familia]
     html = fontes.baixar_pagina()
-    semestrais = fontes.extrair_semestrais(html)
-    mensais = fontes.extrair(html)
+    semestrais = fontes.extrair_semestrais(html, pasta)
+    mensais = [a for a in fontes.extrair(html) if a.grupo in grupos]
     por_mes = plano(semestrais, mensais)
     arquivos_por_ano: dict[int, list[fontes.Arquivo]] = defaultdict(list)
     for mes, arqs in por_mes.items():
@@ -135,7 +153,7 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
                 arquivos_por_ano[int(mes[:4])].append(a)
 
     saida.mkdir(parents=True, exist_ok=True)
-    manifesto_path = saida / "manifesto.json"
+    manifesto_path = saida / nome_manifesto
     manifesto = json.loads(manifesto_path.read_text()) if manifesto_path.exists() else {"anos": {}}
     con = duckdb.connect()
     con.execute("SET preserve_insertion_order = false")
@@ -149,7 +167,7 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
         if not refazer and not anos and anterior and anterior.get("arquivos", sorted(set(anterior["origem_por_mes"].values()))) == nomes:
             continue
         try:
-            _construir_ano(con, ano, arquivos_por_ano[ano], por_mes, saida, manifesto, manter, nomes)
+            _construir_ano(con, ano, arquivos_por_ano[ano], por_mes, saida / f"{prefixo}_{ano}.parquet", manifesto, manter, nomes)
         except Exception as erro:  # um ano ruim não derruba os outros
             print(f"  {ano} falhou: {erro}", flush=True)
             falhas.append(ano)
@@ -168,7 +186,7 @@ def construir(saida: Path, anos: set[int] | None = None, manter: Path | None = N
     return manifesto, falhas
 
 
-def _construir_ano(con, ano, arquivos, por_mes, saida, manifesto, manter, nomes) -> None:
+def _construir_ano(con, ano, arquivos, por_mes, destino, manifesto, manter, nomes) -> None:
     """Baixa os arquivos de um ano, grava combustiveis_AAAA.parquet e a entrada do ano no manifesto."""
     meses_do_ano = sorted(m for m in por_mes if m.startswith(f"{ano}-"))
     print(f"{ano}: {len(arquivos)} arquivo(s)", flush=True)
@@ -201,7 +219,6 @@ def _construir_ano(con, ano, arquivos, por_mes, saida, manifesto, manter, nomes)
                 origem_por_mes[m] = nome
             if not manter:
                 csv.unlink(missing_ok=True)
-        destino = saida / f"combustiveis_{ano}.parquet"
         lista_partes = "[" + ", ".join(_lit(x) for x in partes) + "]"
         con.execute(
             f"""COPY (SELECT * FROM read_parquet({lista_partes}) ORDER BY data, uf, municipio, cnpj, produto)
@@ -233,8 +250,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--anos", type=int, nargs="*", help="só estes anos (padrão: todos)")
     p.add_argument("--manter-brutos", type=Path, help="pasta para guardar os CSVs baixados e reaproveitar")
     p.add_argument("--refazer", action="store_true", help="refaz também os anos que já estão no manifesto")
+    p.add_argument("--familia", choices=sorted(FAMILIAS), default="combustiveis")
     a = p.parse_args(argv)
-    _, falhas = construir(a.saida, set(a.anos) if a.anos else None, a.manter_brutos, a.refazer)
+    _, falhas = construir(a.saida, set(a.anos) if a.anos else None, a.manter_brutos, a.refazer, a.familia)
     if falhas:
         print(f"Anos que falharam (rode de novo para continuar): {falhas}")
         return 1

@@ -19,12 +19,14 @@ def test_extrai_todos_os_padroes_de_nome_da_anp():
         "2026/01-dados-abertos-precos-diesel-gnv.csv",  # mês no começo
         "2026/06-dados-abertos-precos-2026-06-gasolina-etanol.csv",  # ano repetido no meio
         "2026/02-cados-abertos-preco-gasolina-etanol.csv",  # erro de digitação da ANP
-        "2026/01-dados-abertos-precos-glp.csv",  # GLP fica fora da v1
+        "2026/01-dados-abertos-precos-glp.csv",  # GLP (botijão), família própria
+        "2026/01-dados-abertos-precos-oleo.csv",  # grupo desconhecido fica fora
     )
     chaves = [a.chave for a in fontes.extrair(html)]
     assert chaves == [
         "2023-01_gasolina-etanol",
         "2026-01_diesel-gnv",
+        "2026-01_glp",
         "2026-02_gasolina-etanol",
         "2026-06_gasolina-etanol",
     ]

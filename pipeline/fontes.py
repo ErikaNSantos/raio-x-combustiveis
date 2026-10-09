@@ -17,10 +17,11 @@ PAGINA = (
     "serie-historica-de-precos-de-combustiveis"
 )
 
-# Grupos de arquivo que entram no projeto. GLP fica de fora na v1.
+# Grupos de arquivo mensal e a família da base a que cada um pertence.
 GRUPOS = {
     "gasolina-etanol": ("gasolina", "etanol"),
     "diesel-gnv": ("diesel", "gnv"),
+    "glp": ("glp",),
 }
 
 
@@ -93,20 +94,20 @@ def baixar_pagina(url: str = PAGINA) -> str:
         return resp.read().decode("utf-8", errors="replace")
 
 
-_ANCORA_SEMESTRAL = re.compile(r'<a[^>]+href="([^"]+/shpc/dsas/ca/[^"]+\.(?:csv|zip))"[^>]*>(.*?)</a>', re.IGNORECASE | re.S)
+_ANCORA_SEMESTRAL = r'<a[^>]+href="([^"]+/shpc/dsas/{pasta}/[^"]+\.(?:csv|zip))"[^>]*>(.*?)</a>'
 _TEXTO_SEMESTRE = re.compile(r"([12])\s*º\s*semestre\s+de\s+(\d{4})", re.IGNORECASE)
-_NOME_SEMESTRE = re.compile(r"ca-(\d{4})-0([12])\.", re.IGNORECASE)
+_NOME_SEMESTRE = re.compile(r"(?:ca|glp)-?(\d{4})-0([12])\.", re.IGNORECASE)
 
 
-def extrair_semestrais(html: str) -> list[Arquivo]:
-    """Arquivos semestrais de combustíveis automotivos (pasta `dsas/ca`), de 2004 em diante.
+def extrair_semestrais(html: str, pasta: str = "ca") -> list[Arquivo]:
+    """Arquivos semestrais (pasta `dsas/ca`, combustíveis automotivos, ou `dsas/glp`), de 2004 em diante.
 
     O ano e o semestre vêm do texto do link ("1º semestre de 2022"): o nome do arquivo nem
     sempre diz (o 1º semestre de 2022 foi publicado como `precos-semestrais-ca.zip`).
     O nome `ca-AAAA-0S` só é usado quando o texto não ajuda. O semestre vira `mes` 1 ou 7.
     """
     vistos: dict[str, Arquivo] = {}
-    for url, ancora in _ANCORA_SEMESTRAL.findall(html):
+    for url, ancora in re.findall(_ANCORA_SEMESTRAL.format(pasta=pasta), html, re.IGNORECASE | re.S):
         texto = re.sub(r"<[^>]+>", " ", ancora)
         m = _TEXTO_SEMESTRE.search(texto)
         if m:
