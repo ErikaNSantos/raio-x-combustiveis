@@ -712,7 +712,11 @@
 
   /* ---------- estado e controles ---------- */
 
+  /** Avisa o mapa 3D (módulo à parte, site/mapa3d.js) que filtro ou estado mudou. */
+  const avisar = () => document.dispatchEvent(new CustomEvent("raiox:mudou"));
+
   function renderTudo() {
+    avisar();
     renderIndicadores();
     renderMapa();
     renderRanking();
@@ -727,6 +731,7 @@
     estado.uf = uf;
     estado.municipio = null;
     $("f-uf").value = uf;
+    avisar();
     renderMapa();
     renderRanking();
     renderEtanol();
@@ -821,6 +826,9 @@
     $("rodape-atualizado").textContent = `Atualizado em ${R.atualizado_em.split("-").reverse().join("/")}`;
     montarControles();
     renderMetodo();
+    // O que o mapa 3D precisa ler daqui: dados, filtros e as mesmas regras de valor e de tooltip.
+    window.RaioX = { R, geo, estado, I, PRODUTOS, linhas, linhaDoMes, valor, definirUF, mostrarTip, esconderTip, mesLongo, mesCurto, nomeUF, unidade, quem, brl, pct };
+    document.dispatchEvent(new CustomEvent("raiox:pronto"));
     renderTudo();
   }
 

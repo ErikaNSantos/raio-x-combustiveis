@@ -42,7 +42,8 @@ GitHub Actions ─► segunda, 6h: atualiza a base (workflow no repositório do 
 - **Mesmo método, testado.** A agregação em SQL é comparada nos testes com a versão original em pandas, e as duas dão o mesmo resultado.
 - **Meses sem dados aparecem como buraco**, não como linha ligando os vizinhos. A ANP não tem coletas em junho de 2014 nem em setembro de 2020 (e os meses vizinhos têm poucas).
 - **A fonte tem surpresas.** O 1º semestre de 2022 foi publicado sem ano no nome do arquivo (o ano vem do texto do link), o 2º semestre de 2021 veio em latin-1 em vez de UTF-8, e o gov.br derruba downloads grandes no meio (o download retoma de onde parou).
-- **Página sem build e sem dependência externa em tempo real.** HTML, CSS e JS puro, com o d3 e o mapa salvos no próprio repositório.
+- **Página sem build e sem dependência externa em tempo real.** HTML, CSS e JS puro, com o d3, o three.js e o mapa salvos no próprio repositório.
+- **O mapa 3D separa o que cada canal mostra.** A altura é o preço do mês, a partir do zero e na mesma escala da série inteira, para a subida e a descida ao longo do tempo serem reais; a cor é a distância do estado para a mediana do Brasil naquele mês. Assim a altura conta a história no tempo e a cor, a comparação entre estados, sem exagerar diferenças cortando o eixo. O 3D é a vitrine: o valor exato continua no mapa 2D, no ranking e nas tabelas.
 
 ## Limitações
 

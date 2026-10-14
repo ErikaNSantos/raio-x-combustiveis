@@ -89,6 +89,27 @@
         <details class="tabela"><summary>Ver tabela</summary><div class="tabela-rolagem" id="t-mapa"></div></details>
       </section>
 
+      <section class="bloco" aria-labelledby="h-3d">
+        <h2 id="h-3d">O preço desde 2004, em 3D</h2>
+        <p class="lead">Cada estado é uma coluna. A altura é o preço mediano do mês, na mesma escala da série inteira, para dar pra ver o país todo subir e descer. A cor mostra se o estado estava mais caro ou mais barato que o Brasil naquele mês. Aperte "Tocar" ou arraste a linha do tempo; arraste o mapa para girar e clique num estado para destacá-lo nos gráficos.</p>
+        <div class="cartao">
+          <div class="controles3d" id="controles3d">
+            <button type="button" class="btn-play" id="play3d" aria-pressed="false">▶ Tocar</button>
+            <div class="tempo3d">
+              <div class="mes3d"><b id="mes3d" aria-live="polite"></b> <span id="br3d"></span></div>
+              <input type="range" id="f-mes3d" min="0" max="0" step="1" value="0" aria-label="Mês exibido no mapa 3D" />
+            </div>
+          </div>
+          <div class="grafico mapa3d" id="g-mapa3d"></div>
+          <div class="legenda" id="leg-3d">
+            <span><i class="bloco" style="background:var(--series-1)"></i>12% ou mais abaixo do Brasil</span>
+            <span><i class="bloco" style="background:var(--neutral)"></i>Igual ao Brasil</span>
+            <span><i class="bloco" style="background:var(--series-2)"></i>12% ou mais acima do Brasil</span>
+            <span><i class="bloco" style="background:var(--surface-2)"></i>Sem coleta no mês</span>
+          </div>
+        </div>
+      </section>
+
       <section class="bloco" aria-labelledby="h-etanol">
         <h2 id="h-etanol">Etanol ou gasolina?</h2>
         <p class="lead">O etanol rende cerca de 70% da gasolina por litro. Quando o preço dele fica abaixo de 70% do preço da gasolina, abastecer com etanol sai mais barato por quilômetro.</p>
@@ -151,5 +172,6 @@
     <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
     <script src="vendor/d3.min.js"></script>
     <script src="app.js"></script>
+    <script type="module" src="mapa3d.js"></script>
   </body>
 </html>
