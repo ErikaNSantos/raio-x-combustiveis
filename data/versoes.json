@@ -22,7 +22,7 @@
   "2023": "6d4dd2dae1b8",
   "2024": "ac9f2f081a75",
   "2025": "8523bf46cd42",
-  "2026": "77d8cc1dd8a3",
+  "2026": "76f3b3cb11d6",
   "glp_2004": "44d4479a7e7c",
   "glp_2005": "50d6f8f1d067",
   "glp_2006": "ff322c5058ed",
@@ -45,7 +45,7 @@
   "glp_2023": "b62ee79e7b65",
   "glp_2024": "d5b3992e44d4",
   "glp_2025": "ac728b1fdbb4",
-  "glp_2026": "12e8b591b18a"
+  "glp_2026": "4a394da422d4"
  },
  "qualidade": {
   "2004-05": {
@@ -1380,6 +1380,11 @@
   },
   "2026-09": {
    "linhas": 74037,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "2026-10": {
+   "linhas": 71465,
    "fora_escopo": 0,
    "descartadas_faixa": 0
   },
@@ -2720,6 +2725,11 @@
   },
   "glp|2026-09": {
    "linhas": 14167,
+   "fora_escopo": 0,
+   "descartadas_faixa": 0
+  },
+  "glp|2026-10": {
+   "linhas": 13773,
    "fora_escopo": 0,
    "descartadas_faixa": 0
   }
