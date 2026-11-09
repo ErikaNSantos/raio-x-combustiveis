@@ -222,3 +222,23 @@ def test_salario_minimo_por_mes():
 def test_semestral_de_glp_le_nome_sem_hifen():
     html = '<a href="https://x/shpc/dsas/glp/precos-semestrais-glp2021-01.csv">Preços</a>'
     assert [a.periodo for a in fontes.extrair_semestrais(html, "glp")] == ["2021-01"]
+
+
+def test_sem_resposta_do_ibge_usa_malha_e_nomes_guardados(tmp_path, monkeypatch):
+    import json
+
+    from pipeline import malha
+
+    def fora_do_ar(*args, **kwargs):
+        raise TimeoutError("timed out")
+
+    monkeypatch.setattr(malha, "_get", fora_do_ar)
+    geo = tmp_path / "ufs.geojson"
+    geo.write_text(json.dumps({"features": [{"properties": {"sigla": "BA", "nome": "Bahia"}}]}), encoding="utf-8")
+    nomes = tmp_path / "nomes.json"
+    nomes.write_text(json.dumps({"BA|SALVADOR": "Salvador"}), encoding="utf-8")
+
+    assert malha.gerar(geo) == {"BA": "Bahia"}
+    assert malha.nomes_municipios(nomes) == {"BA|SALVADOR": "Salvador"}
+    with pytest.raises(OSError):
+        malha.gerar(tmp_path / "nao-existe.geojson")
