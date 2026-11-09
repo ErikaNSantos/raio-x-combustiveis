@@ -1,4 +1,9 @@
-"""Contorno das UFs (malha oficial do IBGE) salvo junto do site, sem depender da API em tempo real."""
+"""Contorno das UFs (malha oficial do IBGE) salvo junto do site, sem depender da API em tempo real.
+
+A API do IBGE deixou de responder para servidores fora do Brasil (out/2026), como os do GitHub
+Actions. Malha e nomes quase nunca mudam, então ficam versionados no repositório: quando a API
+responde, a cópia é renovada; quando não responde, o pipeline segue com a cópia guardada.
+"""
 
 from __future__ import annotations
 
@@ -15,13 +20,14 @@ MALHA = (
 )
 ESTADOS = "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
 MUNICIPIOS = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado"
+NOMES_GUARDADOS = Path(__file__).resolve().parent.parent / "data" / "ibge" / "nomes_municipios.json"
 
 
-def _get(url: str, tentativas: int = 5):
+def _get(url: str, tentativas: int = 3, timeout: int = 30):
     req = urllib.request.Request(url, headers={"User-Agent": "raio-x-combustiveis"})
     for i in range(tentativas):
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 corpo = resp.read()
             break
         except OSError:  # a API do IBGE às vezes derruba a conexão
@@ -54,10 +60,22 @@ def _orientar(poligono):
     return [externo, *buracos]
 
 
+def _ufs_guardadas(destino: Path) -> dict[str, str]:
+    feats = json.loads(destino.read_text(encoding="utf-8"))["features"]
+    return {f["properties"]["sigla"]: f["properties"]["nome"] for f in feats}
+
+
 def gerar(destino: Path) -> dict[str, str]:
-    """Grava o GeoJSON com `sigla` e `nome` em cada UF e devolve {sigla: nome}."""
-    estados = {str(e["id"]): (e["sigla"], e["nome"]) for e in _get(ESTADOS)}
-    malha = _get(MALHA)
+    """Grava o GeoJSON com `sigla` e `nome` em cada UF e devolve {sigla: nome}.
+    Sem resposta do IBGE, usa o GeoJSON que já está em `destino`."""
+    try:
+        estados = {str(e["id"]): (e["sigla"], e["nome"]) for e in _get(ESTADOS)}
+        malha = _get(MALHA)
+    except OSError as erro:
+        if not destino.exists():
+            raise
+        print(f"IBGE sem resposta ({erro}); usando a malha guardada em {destino.name}.", flush=True)
+        return _ufs_guardadas(destino)
     for feat in malha["features"]:
         sigla, nome = estados[str(feat["properties"]["codarea"])]
         feat["properties"] = {"sigla": sigla, "nome": nome}
@@ -79,13 +97,20 @@ def normalizar(nome: str) -> str:
 GRAFIAS_ANP = {"RS|SANTANA DO LIVRAMENTO": "RS|SANT ANA DO LIVRAMENTO"}
 
 
-def nomes_municipios() -> dict[str, str]:
-    """{'SP|SAO PAULO': 'São Paulo', ...} para mostrar o nome oficial do IBGE, com acento."""
-    nomes = {
-        f"{m['UF-sigla']}|{normalizar(m['municipio-nome'])}": m["municipio-nome"]
-        for m in _get(MUNICIPIOS)
-    }
+def nomes_municipios(guardados: Path = NOMES_GUARDADOS) -> dict[str, str]:
+    """{'SP|SAO PAULO': 'São Paulo', ...} para mostrar o nome oficial do IBGE, com acento.
+    Sem resposta do IBGE, usa a cópia guardada em `guardados`."""
+    try:
+        lista = _get(MUNICIPIOS)
+    except OSError as erro:
+        if not guardados.exists():
+            raise
+        print(f"IBGE sem resposta ({erro}); usando os nomes guardados em {guardados.name}.", flush=True)
+        return json.loads(guardados.read_text(encoding="utf-8"))
+    nomes = {f"{m['UF-sigla']}|{normalizar(m['municipio-nome'])}": m["municipio-nome"] for m in lista}
     for anp, ibge in GRAFIAS_ANP.items():
         if ibge in nomes:
             nomes[anp] = nomes[ibge]
+    guardados.parent.mkdir(parents=True, exist_ok=True)
+    guardados.write_text(json.dumps(nomes, ensure_ascii=False, sort_keys=True, indent=0), encoding="utf-8")
     return nomes
